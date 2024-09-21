@@ -5,7 +5,7 @@ import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import.meta.env
 
-const API_KEY = import.meta.env.VITE_API_KEY
+const API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const systemMessageGeneralConsult = {
   "role": "system",
   "content": `
@@ -63,9 +63,9 @@ const systemMessageMealNotGenerated = {
   "role": "system",
   "content": `
       You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
-      Please generate a 7 DAYS MEAL PLAN for the user to follow. Each day will consist of BREAKFAST, LUNCH, and DINNER. Provide a brief introduction to each meal. 
+      Please generate a 7 DAYS MEAL PLAN for the user to follow. Each day will consist of BREAKFAST, LUNCH, and DINNER. Provide JUST A BRIEF introduction to each meal. 
 
-      PLEASE STRICTLY FOLLOW THIS FORMAT: 
+      PLEASE STRICTLY FOLLOW THIS FORMAT; PROVIDE JUST A BRIEF DESCRIPTION OF THE MEAL AND NOT THE RECIPE; MAKE SURE TO INCLUDE THE MEAL FOR EACH DAY OF THE WEEK: 
       DAY 1: 
       BREAKFAST: <Meal>
       LUNCH:  <Meal>
