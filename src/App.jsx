@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Auth } from '@supabase/auth-ui-react'
@@ -7,6 +8,7 @@ import Navbar from './Navbar'
 import CustomAuth from './CustomAuth'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
+import Chatbot from './Chatbot'
 
 
 const ANON_KEY = import.meta.env.VITE_ANON_API_KEY;
@@ -19,7 +21,7 @@ function App() {
   const [count, setCount] = useState(0)
   const [session, setSession] = useState(null)
   const [username, setUsername] = useState('')
-
+  
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -81,6 +83,9 @@ function App() {
           <main className="container mx-auto px-4 py-8">
             <Routes>
               {/* Your routes here */}
+              <Switch>
+                <Link exact match="/chat"><Chatbot /></Link>
+              </Switch>
             </Routes>
           </main>
         </div>
