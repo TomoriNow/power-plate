@@ -65,7 +65,7 @@ function App() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-400 to-blue-600 flex flex-col justify-center items-center p-4">
         <div className="w-full max-w-md">
-          <h1 className="text-4xl font-bold text-white text-center mb-8">MyFitnessApp</h1>
+          <h1 className="text-4xl font-bold text-white text-center mb-8">Power Plate</h1>
           <div className="bg-white rounded-lg shadow-xl p-8">
             <CustomAuth supabase={supabase} />
           </div>
