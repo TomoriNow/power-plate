@@ -10,16 +10,16 @@ function Card() {
                     <img class="absolute right-0 bottom-0 size-24" src="src/assets/Food restaurant.png" />
                 </div>
             </Link>
-            <Link class="relative basis-1/3 pl-3.5 pt-3.5 bg-white rounded-lg shadow dark:bg-[#333333]" to="/chat">
-                <div>
-                    <h5 class="mb-2 text-base text-left font-bold tracking-tight">Chat with Hercules</h5>
-                    <img class="absolute right-0 bottom-0 size-24" src="src/assets/Conversation icon.png" />
-                </div>
-            </Link>
-            <Link class="relative basis-1/3 pl-3.5 pt-3.5 bg-white rounded-lg shadow dark:bg-[#333333]" to="/workouts">
+            <Link class="relative basis-1/3 pl-3.5 pt-3.5 bg-white rounded-lg shadow dark:bg-[#333333]" to="/workout">
                 <div>
                     <h5 class="mb-2 text-base text-left font-bold tracking-tight">MyWorkout</h5>
                     <img class="absolute right-0 bottom-0 size-24" src="src/assets/Workout Dumbbell.png" />
+                </div>
+            </Link>
+            <Link class="relative basis-1/3 pl-3.5 pt-3.5 bg-white rounded-lg shadow dark:bg-[#333333]" to="/chat">
+                <div>
+                    <h5 class="mb-2 text-base text-left font-bold tracking-tight">Chat</h5>
+                    <img class="absolute right-0 bottom-0 size-24" src="src/assets/Conversation icon.png" />
                 </div>
             </Link>
         </div>

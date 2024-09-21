@@ -296,6 +296,9 @@ function Chatbot() {
   const [workoutGenerated, setIsWorkoutGenerated] = useState(false);
   const [remedyGenerated, setIsRemedyGenerated] = useState(false);
 
+  const [activeButton, setActiveButton] = useState(null);
+
+
 
 
   const handleSend = async (message) => {
@@ -337,6 +340,7 @@ function Chatbot() {
 
       setIsTyping(true);
       await processWorkoutPlan(newMessages);
+
 
     } else if (remedy) {
       const newMessage = {
@@ -738,7 +742,6 @@ function Chatbot() {
       }
 
       for (const day of mealPlan) {
-
         const { data, error } = await supabase
           .from('meal_plans')
           .upsert({
@@ -1049,7 +1052,6 @@ function Chatbot() {
           } else {
             console.warn('No valid meal plan found in the response.');
           }
-
           setMessages(prevMessages => [
             ...prevMessages,
             {
@@ -1076,48 +1078,84 @@ function Chatbot() {
     }
   }
 
+  const buttonClasses = (isActive) =>
+    `flex flex-row items-center rounded-lg text-white font-normal py-2 px-4 transition ease-in-out hover:-translate-y-1 hover:scale-110 duration-300 ${isActive ? 'bg-[#C87FEB]' : 'bg-[#444444] hover:bg-[#C87FEB]'
+    }`;
+
   return (
-    <div className="flex flex-col h-screen flex-grow ml-64 p-8">
-        <div className="flex-grow p-4 md:p-8 bg-gray-100 overflow-y-auto"> {/* Chat area - full height with scroll */}
-            {messages.map((message, i) => (
-                <div key={i} className={`flex ${message.direction === 'incoming' ? 'justify-start' : 'justify-end'} mb-4`}>
-                    <div className={`p-2 md:p-3 rounded-lg text-left ${message.direction === 'incoming' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-800'} max-w-xs md:max-w-md lg:max-w-lg`}>
-                      <div dangerouslySetInnerHTML={{__html: message.message }} />
-                    </div>
-                </div>
-            ))}
-            {isTyping && (
-                <div className="flex justify-start mb-4">
-                    <div className="text-white p-2 md:p-3 rounded-lg bg-purple-500 max-w-xs md:max-w-md lg:max-w-lg">
-                        Hercules is typing...
-                    </div>
-                </div>
-            )}
-        </div>
-        <div className="py-4">
-            <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(true); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
-                MyMealsChat
-            </button>
-            <button onClick={() => {setIsWorkoutPlan(true); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
-                MyWorkoutChat
-            </button>
-            <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(true);}} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
-                Remedy
-            </button>
-        </div>
-        <div className="mx-4 p-4 md:p-6 bg-white border-t border-gray-200"> {/* Input area - sticks to bottom */}
-            <input 
-                type="text"
-                placeholder="Type your query to the gods"
-                className="w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                        handleSend(e.target.value);
-                        e.target.value = '';
-                    }
-                }}
-            />
-        </div>
+    <div className="flex flex-col h-screen w-3/4 ml-64 p-8">
+      <div className="flex-grow p-4 md:p-8 overflow-y-auto"> {/* Chat area - full height with scroll */}
+        {messages.map((message, i) => (
+          <div key={i} className={`flex ${message.direction === 'incoming' ? 'justify-start' : 'justify-end'} mb-4`}>
+            <div className={`p-2 md:p-3 rounded-lg text-left ${message.direction === 'incoming' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-800'} max-w-xs md:max-w-md lg:max-w-lg`}>
+              <div dangerouslySetInnerHTML={{ __html: message.message }} />
+            </div>
+          </div>
+        ))}
+        {isTyping && (
+          <div className="flex justify-start mb-4">
+            <div className="text-white p-2 md:p-3 rounded-lg bg-purple-500 max-w-xs md:max-w-md lg:max-w-lg">
+              Hercules is typing...
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-row mx-4 mt-4 px-4 space-x-4">
+        <button
+          onClick={() => {
+            setActiveButton('meal');
+            setIsWorkoutPlan(false);
+            setIsMealPlan(true);
+            setIsConsultation(false);
+            setIsRemedy(false);
+          }}
+          className={buttonClasses(activeButton === 'meal')}
+        >
+          <img src="src/assets/Food-s.png" className="mr-3 size-5" />
+          <h5>Chat for MyMeals</h5>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveButton('workout');
+            setIsWorkoutPlan(true);
+            setIsMealPlan(false);
+            setIsConsultation(false);
+            setIsRemedy(false);
+          }}
+          className={buttonClasses(activeButton === 'workout')}
+        >
+          <img src="src/assets/Workout-s.png" className="mr-3 size-5" />
+          <h5>Chat for MyWorkout</h5>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveButton('remedy');
+            setIsWorkoutPlan(false);
+            setIsMealPlan(false);
+            setIsConsultation(false);
+            setIsRemedy(true);
+          }}
+          className={buttonClasses(activeButton === 'remedy')}
+        >
+          <img src="src/assets/Fix-s.png" className="mr-3 size-5" />
+          <h5>Remedy</h5>
+        </button>
+      </div>
+      <div className="mx-4 p-4"> {/* Input area - sticks to bottom */}
+        <input
+          type="text"
+          placeholder="Type your basketball query here"
+          className="w-full p-2 md:p-3 rounded-lg bg-[#333333] focus:outline-none focus:border-purple-500 text-[#AAAAAA]"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleSend(e.target.value);
+              e.target.value = '';
+            }
+          }}
+        />
+      </div>
     </div>
   );
 }
