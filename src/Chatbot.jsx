@@ -406,7 +406,7 @@ function Chatbot() {
           setMessages(prevMessages => [
             ...prevMessages,
             {
-              message: formattedResponse,
+              message: formattedResponse + "<br/>I have successfully added this to your meal plan!",
               sender: "Hercules",
               direction: "incoming",
             },
@@ -483,7 +483,7 @@ function Chatbot() {
           setMessages(prevMessages => [
             ...prevMessages,
             {
-              message: formattedResponse,
+              message: formattedResponse + "<br/>I have successfully added this to your meal plan!",
               sender: "Hercules",
               direction: "incoming",
             },
@@ -846,7 +846,7 @@ function Chatbot() {
           setMessages(prevMessages => [
             ...prevMessages,
             {
-              message: formattedResponse,
+              message: formattedResponse + "<br/>I have successfully added this to your workout plan!",
               sender: "Hercules",
               direction: "incoming",
             },
@@ -922,7 +922,7 @@ function Chatbot() {
           setMessages(prevMessages => [
             ...prevMessages,
             {
-              message: formattedResponse,
+              message: formattedResponse + "<br/>I have successfully added this to your workout plan!",
               sender: "Hercules",
               direction: "incoming",
             },
@@ -980,7 +980,7 @@ function Chatbot() {
           setMessages(prevMessages => [
             ...prevMessages,
             {
-              message: formattedResponse,
+              message: formattedResponse + "<br/>I have successfully added this to your remedy plan!",
               sender: "Hercules",
               direction: "incoming",
             },
@@ -1055,7 +1055,7 @@ function Chatbot() {
           setMessages(prevMessages => [
             ...prevMessages,
             {
-              message: formattedResponse,
+              message: formattedResponse + "<br/>I have successfully added this to your remedy plan!",
               sender: "Hercules",
               direction: "incoming",
             },

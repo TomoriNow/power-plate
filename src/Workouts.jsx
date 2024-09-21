@@ -79,8 +79,8 @@ const Workouts = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <div className="flex space-x-2 mb-6 overflow-x-auto">
+    <div className="flex flex-row content-center w-full ml-60 p-4">
+      <div className="basis-1/7 space-x-2 mb-6 overflow-x-auto">
         {[1, 2, 3, 4, 5, 6, 7].map(day => (
           <button
             key={day}

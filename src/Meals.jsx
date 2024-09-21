@@ -60,8 +60,8 @@ const Meals = () => {
     );
   };
 
-  if (loading) return <p className="text-center text-gray-600">Loading...</p>;
-  if (error) return <p className="text-center text-red-600">Error: {error}</p>;
+  if (loading) return <p className="ml-60 text-center text-gray-600">Loading...</p>;
+  if (error) return <p className="ml-60 text-center text-red-600">Error: {error}</p>;
 
   if (Object.keys(mealPlan).length === 0) {
     return (
@@ -80,7 +80,7 @@ const Meals = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
+    <div className="ml-60 max-w-2xl p-4">
       <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">My Meal Plan</h2>
       <div className="flex space-x-2 mb-6 overflow-x-auto">
         {[1, 2, 3, 4, 5, 6, 7].map(day => (
@@ -89,7 +89,7 @@ const Meals = () => {
             onClick={() => setSelectedDay(day)}
             className={`px-4 py-2 rounded-full ${
               selectedDay === day
-                ? 'bg-blue-500 text-white'
+                ? 'bg-purple-500 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
