@@ -5,7 +5,7 @@ import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 
 
-const API_KEY = "put-api-key-here";
+const API_KEY = "";
 const systemMessage = {
   "role": "system", "content": "Explain things like you're talking to a sports professional with decades of experience in academia, specializing in basketball and the NBA. Whenever possible, list your answers in bullet points for clarity."
 }
