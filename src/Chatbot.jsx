@@ -5,7 +5,7 @@ import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import.meta.env
 
-const API_KEY = import.meta.env.VITE_API_KEY
+const API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const systemMessageGeneralConsult = {
     "role": "system",
     "content": `
@@ -22,21 +22,27 @@ const systemMessageGeneralConsult = {
     "role": "system",
     "content": `
       You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
-      Please generate a 7 WORKOUT PLAN for the user to follow. Each day will consist of ONE WORKOUT OR A REST DAY. Provide a brief introduction to each workout.
+      Please generate a 7 WORKOUT PLAN for the user to follow. Each day will consist of ONE WORKOUT OR A REST DAY. Provide a brief introduction to each workout, and please insert a NEW LINE for every workout DAY.
 
         PLEASE STRICTLY FOLLOW THIS FORMAT FOR THE WORKOUT/REST-DAY (ACCORDING TO THE PREFERENCE OF THE USER)
         DAY 1: 
         WORKOUT/REST-DAY <workout/rest-day>
+        
         DAY 2: 
         WORKOUT/REST-DAY <workout/rest-day>
+        
         DAY 3: 
         WORKOUT/REST-DAY <workout/rest-day>
+        
         DAY 4: 
         WORKOUT/REST-DAY <workout/rest-day>
+        
         DAY 5: 
         WORKOUT/REST-DAY <workout/rest-day>
+        
         DAY 6: 
         WORKOUT/REST-DAY <workout/rest-day>
+        
         DAY 7: 
         WORKOUT/REST-DAY <workout/rest-day>
     `
@@ -170,6 +176,7 @@ function Chatbot() {
   const [remedy, setIsRemedy] = useState(false);
   const [mealGenerated, setIsMealGenerated] = useState(false);
   const [workoutGenerated, setIsWorkoutGenerated] = useState(false);
+  const [remedyGenerated, setIsRemedyGenerated] = useState(false);
   
   
 
@@ -188,10 +195,33 @@ function Chatbot() {
           setIsTyping(true);
           await processMessageToConsult(newMessages);
     } else if (mealPlan) {
+        const newMessage = {
+            message,
+            direction: 'outgoing',
+            sender: "user"
+          };
+        
+          const newMessages = [...messages, newMessage];
+          setMessages(newMessages);
+          
+          setIsTyping(true);
+          await processMealPlan(newMessages);
         
     } else if (workoutPlan) {
+        const newMessage = {
+            message,
+            direction: 'outgoing',
+            sender: "user"
+          };
         
-    } else if (remedy) {
+          const newMessages = [...messages, newMessage];
+          setMessages(newMessages);
+          
+          setIsTyping(true);
+          await processWorkoutPlan(newMessages);
+        
+    } else {
+        
         
     }
     
@@ -465,6 +495,113 @@ async function processWorkoutPlan(chatMessages) {
           }
     }
   }
+  
+  async function processRemedy(chatMessages) {
+        if (remedyGenerated) {
+            let apiMessages = chatMessages.map((messageObject) => {
+                let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+                return { role: role, content: messageObject.message }
+            });
+            
+            const apiRequestBody = {
+                "model": "gpt-4o-mini", 
+                "messages": [
+                systemMessageGeneralConsult,
+                ...apiMessages 
+                ]
+            }
+            
+            try {
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(apiRequestBody)
+                });
+            
+                const data = await response.json();
+            
+                if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+                let rawResponse = data.choices[0].message.content;
+                const formattedResponse = formatResponse(rawResponse);
+                    setMessages(prevMessages => [
+                    ...prevMessages,
+                    {
+                        message: formattedResponse,
+                        sender: "Hercules",
+                        direction: "incoming",
+                    },
+                    ]);
+                }
+            } catch (error) {
+                console.error("Error processing message:", error);
+                setMessages(prevMessages => [
+                ...prevMessages,
+                {
+                    message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+                    sender: "Hercules",
+                    direction: "incoming",
+                },
+                ]);
+            } finally {
+                setIsTyping(false);
+            }
+        } else {
+            let apiMessages = chatMessages.map((messageObject) => {
+                let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+                return { role: role, content: messageObject.message }
+            });
+            
+            const apiRequestBody = {
+                "model": "gpt-4o-mini", 
+                "messages": [
+                systemMessageGeneralConsult,
+                ...apiMessages 
+                ]
+            }
+            
+            try {
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(apiRequestBody)
+                });
+            
+                const data = await response.json();
+            
+                if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+                let rawResponse = data.choices[0].message.content;
+                const formattedResponse = formatResponse(rawResponse);
+                    setMessages(prevMessages => [
+                    ...prevMessages,
+                    {
+                        message: formattedResponse,
+                        sender: "Hercules",
+                        direction: "incoming",
+                    },
+                    ]);
+                }
+            } catch (error) {
+                console.error("Error processing message:", error);
+                setMessages(prevMessages => [
+                ...prevMessages,
+                {
+                    message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+                    sender: "Hercules",
+                    direction: "incoming",
+                },
+                ]);
+            } finally {
+                setIsTyping(false);
+                setIsRemedyGenerated(true);
+            }
+        }
+    }
 
   return (
     <div className="flex flex-col h-screen">
@@ -492,11 +629,17 @@ async function processWorkoutPlan(chatMessages) {
             )} */}
         </div>
         <div className="py-4">
-            <button className="rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
-                MyMeals
+            <button className="mx-4 rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+                MyMealsChat
+            </button>
+            <button onClick={() => {setIsWorkoutPlan(true); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+                MyWorkoutChat
+            </button>
+            <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(true);}} className="mx-4 rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+                Remedy
             </button>
         </div>
-        <div className="p-4 md:p-6 bg-white border-t border-gray-200"> {/* Input area - sticks to bottom */}
+        <div className="mx-4 p-4 md:p-6 bg-white border-t border-gray-200"> {/* Input area - sticks to bottom */}
             <input 
                 type="text"
                 placeholder="Type your basketball query here"
