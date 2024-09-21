@@ -16,7 +16,7 @@ export async function fetchUserData() {
       setUserId(user.id); // Get the current user ID
     }
   }, []);
-  
+
   try {
     const { data, error } = await supabase
       .from('users')  // Name of the table
@@ -27,9 +27,31 @@ export async function fetchUserData() {
     if (error) throw error;
 
     return data
-    
+
   } catch (error) {
     console.error('Error fetching user data:', error);
+    return null;
+  }
+}
+
+export async function fetchMealPlanData() {
+  useEffect(() => {
+    const user = supabase.auth.getUser();
+    if (user) {
+      setUserId(user.id); // Get the current user ID
+    }
+  }, []);
+  try {
+    const { data, error } = await supabase
+      .from('meal_plans')
+      .select('meal')
+      .eq('user_id', user.id)
+      .order('day', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching meal plan data:', error);
     return null;
   }
 }
@@ -44,6 +66,16 @@ const getCurrentUser = async () => {
     return null;
   }
 };
+
+const getMealPlanUser = async () => {
+  const user = supabase.auth.getUser();
+  if (user) {
+    const mealPlanData = await fetchMealPlanData();
+    return mealPlanData;
+  } else {
+    return null;
+  }
+}
 
 const systemMessageGeneralConsult = {
   "role": "system",
@@ -184,7 +216,7 @@ const systemMessageMealGenerated = {
 
 const systemMessageRemedy = {
   "role": "system",
-  "content":`
+  "content": `
     You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
 
     KEEP IN MIND THE CONTEXT OF THE USER:
@@ -193,10 +225,11 @@ const systemMessageRemedy = {
     They have these ALLERGY(S): ${getCurrentUser.userAllergies}.
     The BMI of the user is ${getCurrentUser.userBmi}.
 
-    HERE IS THE CURRENT MEAL PLAN OF THE USER: 
+    HERE IS THE CURRENT MEAL PLAN OF THE USER:
+    ${getMealPlanUser.meal_plan} 
 
     GENERATE A NEW MEAL PLAN SUCH THAT IT STILLS IN LINE WITH THE USER GOALS. 
-    PLEASE STRICTLY FOLLOW THIS FORMAT: 
+    strictly follow this format:
     DAY 1: 
     BREAKFAST: <Meal>
     LUNCH:  <Meal>
@@ -227,6 +260,9 @@ const systemMessageRemedy = {
     DINNER: <Meal>
 
     NOTE: Fill in the <Meal> field with the generated meal
+    
+    Do not write anything before typing DAY 1 
+
   `
 };
 
@@ -277,8 +313,8 @@ function Chatbot() {
   const [mealGenerated, setIsMealGenerated] = useState(false);
   const [workoutGenerated, setIsWorkoutGenerated] = useState(false);
   const [remedyGenerated, setIsRemedyGenerated] = useState(false);
-  
-  
+
+
 
   const handleSend = async (message) => {
 
@@ -295,44 +331,57 @@ function Chatbot() {
       setIsTyping(true);
       await processMessageToConsult(newMessages);
     } else if (mealPlan) {
-        const newMessage = {
-            message,
-            direction: 'outgoing',
-            sender: "user"
-          };
-        
-          const newMessages = [...messages, newMessage];
-          setMessages(newMessages);
-          
-          setIsTyping(true);
-          await processMealPlan(newMessages);
-        
+      const newMessage = {
+        message,
+        direction: 'outgoing',
+        sender: "user"
+      };
+
+      const newMessages = [...messages, newMessage];
+      setMessages(newMessages);
+
+      setIsTyping(true);
+      await processMealPlan(newMessages);
+
     } else if (workoutPlan) {
-        const newMessage = {
-            message,
-            direction: 'outgoing',
-            sender: "user"
-          };
-        
-          const newMessages = [...messages, newMessage];
-          setMessages(newMessages);
-          
-          setIsTyping(true);
-          await processWorkoutPlan(newMessages);
-        
-    } else {
-        const newMessage = {
-            message,
-            direction: 'outgoing',
-            sender: "user"
-          };
-        
-          const newMessages = [...messages, newMessage];
-          setMessages(newMessages);
-          
-          setIsTyping(true);
-          await processRemedy(newMessages);
-        
+      const newMessage = {
+        message,
+        direction: 'outgoing',
+        sender: "user"
+      };
+
+      const newMessages = [...messages, newMessage];
+      setMessages(newMessages);
+
+      setIsTyping(true);
+      await processWorkoutPlan(newMessages);
+
+    } else if (remedy) {
+      const newMessage = {
+        message,
+        direction: 'outgoing',
+        sender: "user"
+      };
+
+      const newMessages = [...messages, newMessage];
+      setMessages(newMessages);
+
+      setIsTyping(true);
+      await processRemedy(newMessages);
+    }
+    else {
+      const newMessage = {
+        message,
+        direction: 'outgoing',
+        sender: "user"
+      };
+
+      const newMessages = [...messages, newMessage];
+      setMessages(newMessages);
+
+      setIsTyping(true);
+      await processRemedy(newMessages);
+
     }
 
   }
@@ -421,11 +470,11 @@ function Chatbot() {
         if (data.choices && data.choices.length > 0 && data.choices[0].message) {
           let rawResponse = data.choices[0].message.content;
           const formattedResponse = formatResponse(rawResponse);
-          
+
           // Parse the workout plan
           const mealPlan = parseMealPlan(rawResponse);
           console.log('Parsed meal plan:', mealPlan);
-          
+
           if (mealPlan.length > 0) {
             // Get the current user's ID
             const { data: { user }, error } = await supabase.auth.getUser();
@@ -444,7 +493,7 @@ function Chatbot() {
           } else {
             console.warn('No valid meal plan found in the response.');
           }
-          
+
           setMessages(prevMessages => [
             ...prevMessages,
             {
@@ -471,7 +520,7 @@ function Chatbot() {
     }
 
   }
-  
+
 
   //Process General Consultation
   async function processMessageToConsult(chatMessages) {
@@ -526,48 +575,48 @@ function Chatbot() {
       setIsTyping(false);
     }
   }
-  
+
   function parseMealPlan(response) {
     if (typeof response !== 'string' || response === '') {
       console.error('Invalid response format');
       return [];
     }
-  
+
     // Find the position of "DAY 1" and start parsing from there
     const startIndex = response.indexOf('DAY 1');
     if (startIndex === -1) {
       console.error('No valid meal plan days found');
       return [];
     }
-  
+
     // Trim the response from "DAY 1" onward
     const mealPlan = response.slice(startIndex);
-  
+
     // Split the meal plan by 'DAY' and filter out any empty days
     const days = mealPlan.split('DAY').filter(day => day.trim());
-  
+
     // Initialize an empty array to hold parsed days
     const parsedDays = [];
-  
+
     // Parse each day from the meal plan
     days.forEach(day => {
       const lines = day.split('\n').filter(line => line.trim());
-  
+
       if (lines.length < 2) {
         // Skip invalid entries with insufficient data
         return;
       }
-  
+
       // Extract day number
       const dayNum = lines[0].split(':')[0].trim();
-  
+
       // Initialize meals object
       const meals = {
         BREAKFAST: '',
         LUNCH: '',
         DINNER: ''
       };
-  
+
       // Parse meals
       lines.slice(1).forEach(line => {
         const [mealType, ...mealDescription] = line.split(':');
@@ -575,16 +624,16 @@ function Chatbot() {
           meals[mealType.trim().toUpperCase()] = mealDescription.join(':').trim();
         }
       });
-  
+
       // Add the parsed day to the parsedDays array
       parsedDays.push({
         day: dayNum,
         meals: meals
       });
     });
-    
+
     console.log(parsedDays);
-  
+
     // Ensure we have exactly 7 days (1 to 7)
     const completePlan = [];
     for (let i = 1; i <= 7; i++) {
@@ -598,57 +647,57 @@ function Chatbot() {
           meals: {
             BREAKFAST: '',
             LUNCH: '',
-            DINNER: ''
+            DINNER: '',
           }
         });
       }
     }
-    
+
     return completePlan;
   }
-  
+
   function parseWorkoutPlan(response) {
     if (typeof response !== 'string' || response === '') {
       console.error('Invalid response format');
       return [];
     }
-  
+
     // Find the position of "DAY 1" and start parsing from there
     const startIndex = response.indexOf('DAY 1');
     if (startIndex === -1) {
       console.error('No valid workout days found');
       return [];
     }
-  
+
     // Trim the response from "DAY 1" onward
     const workoutPlan = response.slice(startIndex);
-  
+
     // Split the workout plan by 'DAY' and filter out any empty days
     const days = workoutPlan.split('DAY').filter(day => day);
-  
+
     // Initialize an empty object to hold parsed days
     const parsedDays = {};
-  
+
     // Parse each day from the workout plan
     days.forEach(day => {
       const lines = day.split('\n').filter(line => line);
-  
+
       if (lines.length < 2) {
         // Skip invalid entries with insufficient data
         return;
       }
-  
+
       // Extract day number and details
       const dayNum = lines[0].replace(':', '').trim();
       let type = lines[1].toUpperCase().startsWith('REST-DAY') ? 'REST-DAY' : 'WORKOUT';
       let workout = lines.slice(2).join(' ').trim();
-  
+
       // If the workout description is blank, set the type to REST-DAY
       if (!workout) {
         type = 'REST-DAY';
         workout = ''; // Ensure workout is blank for REST-DAY
       }
-  
+
       // Add the parsed day to the parsedDays object
       parsedDays[dayNum] = {
         day: dayNum,
@@ -656,7 +705,7 @@ function Chatbot() {
         workout: workout
       };
     });
-  
+
     // Ensure we have exactly 7 days (1 to 7)
     const completePlan = [];
     for (let i = 1; i <= 7; i++) {
@@ -672,16 +721,16 @@ function Chatbot() {
         });
       }
     }
-    
+
     return completePlan;
   }
-  
+
   async function insertMealPlan(mealPlan, userId) {
     if (!userId) {
       console.error('No user ID provided. Cannot insert meal plan.');
       return;
     }
-  
+
     try {
       // First, check if the user exists in the users table
       let { data: user, error: userError } = await supabase
@@ -689,7 +738,7 @@ function Chatbot() {
         .select('user_id')
         .eq('user_id', userId)
         .single();
-  
+
       if (userError) {
         if (userError.code === 'PGRST116') {
           console.log(`User with id ${userId} not found in the users table. Attempting to create...`);
@@ -698,41 +747,42 @@ function Chatbot() {
             .from('users')
             .insert({ user_id: userId })
             .single();
-  
+
           if (createError) throw createError;
           user = newUser;
         } else {
           throw userError;
         }
       }
-      
+
       for (const day of mealPlan) {
-        const {data, error} = await supabase
+
+        const { data, error } = await supabase
           .from('meal_plans')
           .upsert({
             user_id: userId,
             day: day.day,
-            meal_plan: day.meal_plan
+            meal_plan: day.meals
             //explanation: day.explanation // Include Explanation if needed
           }, {
             onConflict: 'user_id,day'
           });
-          
-          if (error) throw error;
+
+        if (error) throw error;
       }
       console.log('Meal plan inserted successfully');
     } catch (error) {
       console.error('Error inserting meal plan:', error);
       throw error; // Re-throw the error so it can be caught and handled by the caller
     }
-}
-  
+  }
+
   async function insertWorkoutPlan(workoutPlan, userId) {
     if (!userId) {
       console.error('No user ID provided. Cannot insert workout plan.');
       return;
     }
-  
+
     try {
       // First, check if the user exists in the users table
       let { data: user, error: userError } = await supabase
@@ -740,7 +790,7 @@ function Chatbot() {
         .select('user_id')
         .eq('user_id', userId)
         .single();
-  
+
       if (userError) {
         if (userError.code === 'PGRST116') {
           console.log(`User with id ${userId} not found in the users table. Attempting to create...`);
@@ -749,14 +799,14 @@ function Chatbot() {
             .from('users')
             .insert({ user_id: userId })
             .single();
-  
+
           if (createError) throw createError;
           user = newUser;
         } else {
           throw userError;
         }
       }
-  
+
       // If we reach here, the user exists (or was just created), so we can proceed with inserting the workout plan
       for (const day of workoutPlan) {
         const { data, error } = await supabase
@@ -768,7 +818,7 @@ function Chatbot() {
           }, {
             onConflict: 'user_id,day'
           });
-  
+
         if (error) throw error;
       }
       console.log('Workout plan inserted successfully');
@@ -777,73 +827,22 @@ function Chatbot() {
       throw error; // Re-throw the error so it can be caught and handled by the caller
     }
   }
-  
-async function processWorkoutPlan(chatMessages) {
+
+  async function processWorkoutPlan(chatMessages) {
     if (workoutGenerated) {
-        let apiMessages = chatMessages.map((messageObject) => {
-            let role = messageObject.sender === "Hercules" ? "assistant" : "user";
-            return { role: role, content: messageObject.message }
-          });
-        
-          const apiRequestBody = {
-            "model": "gpt-4o-mini", 
-            "messages": [
-              systemMessageWorkoutPlanGenerated,
-              ...apiMessages 
-            ]
-          }
-        
-          try {
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${API_KEY}`,
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify(apiRequestBody)
-            });
-        
-            const data = await response.json();
-        
-            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-              let rawResponse = data.choices[0].message.content;
-              const formattedResponse = formatResponse(rawResponse);
-                setMessages(prevMessages => [
-                  ...prevMessages,
-                  {
-                    message: formattedResponse,
-                    sender: "Hercules",
-                    direction: "incoming",
-                  },
-                ]);
-            }
-          } catch (error) {
-            console.error("Error processing message:", error);
-            setMessages(prevMessages => [
-              ...prevMessages,
-              {
-                message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
-                sender: "Hercules",
-                direction: "incoming",
-              },
-            ]);
-          } finally {
-            setIsTyping(false);
-          }
-    } else {
       let apiMessages = chatMessages.map((messageObject) => {
         let role = messageObject.sender === "Hercules" ? "assistant" : "user";
         return { role: role, content: messageObject.message }
       });
-      
+
       const apiRequestBody = {
-        "model": "gpt-4o-mini", 
+        "model": "gpt-4o-mini",
         "messages": [
-          systemMessageWorkoutPlanNotGenerated,
-          ...apiMessages 
+          systemMessageWorkoutPlanGenerated,
+          ...apiMessages
         ]
       }
-      
+
       try {
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
@@ -853,18 +852,69 @@ async function processWorkoutPlan(chatMessages) {
           },
           body: JSON.stringify(apiRequestBody)
         });
-      
+
         const data = await response.json();
-      
+
+        if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+          let rawResponse = data.choices[0].message.content;
+          const formattedResponse = formatResponse(rawResponse);
+          setMessages(prevMessages => [
+            ...prevMessages,
+            {
+              message: formattedResponse,
+              sender: "Hercules",
+              direction: "incoming",
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error processing message:", error);
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+            sender: "Hercules",
+            direction: "incoming",
+          },
+        ]);
+      } finally {
+        setIsTyping(false);
+      }
+    } else {
+      let apiMessages = chatMessages.map((messageObject) => {
+        let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+        return { role: role, content: messageObject.message }
+      });
+
+      const apiRequestBody = {
+        "model": "gpt-4o-mini",
+        "messages": [
+          systemMessageWorkoutPlanNotGenerated,
+          ...apiMessages
+        ]
+      }
+
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(apiRequestBody)
+        });
+
+        const data = await response.json();
+
         if (data.choices && data.choices.length > 0 && data.choices[0].message) {
           let rawResponse = data.choices[0].message.content;
           console.log('Raw API response:', rawResponse);
           const formattedResponse = formatResponse(rawResponse);
-          
+
           // Parse the workout plan
           const workoutPlan = parseWorkoutPlan(rawResponse);
           console.log('Parsed workout plan:', workoutPlan);
-          
+
           if (workoutPlan.length > 0) {
             // Get the current user's ID
             const { data: { user }, error } = await supabase.auth.getUser();
@@ -883,7 +933,7 @@ async function processWorkoutPlan(chatMessages) {
           } else {
             console.warn('No valid workout plan found in the response.');
           }
-          
+
           setMessages(prevMessages => [
             ...prevMessages,
             {
@@ -911,156 +961,180 @@ async function processWorkoutPlan(chatMessages) {
       }
     }
   }
-  
+
   async function processRemedy(chatMessages) {
-        if (remedyGenerated) {
-            let apiMessages = chatMessages.map((messageObject) => {
-                let role = messageObject.sender === "Hercules" ? "assistant" : "user";
-                return { role: role, content: messageObject.message }
-            });
-            
-            const apiRequestBody = {
-                "model": "gpt-4o-mini", 
-                "messages": [
-                systemMessageGeneralConsult,
-                ...apiMessages 
-                ]
-            }
-            
-            try {
-                const response = await fetch("https://api.openai.com/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${API_KEY}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(apiRequestBody)
-                });
-            
-                const data = await response.json();
-            
-                if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-                let rawResponse = data.choices[0].message.content;
-                const formattedResponse = formatResponse(rawResponse);
-                    setMessages(prevMessages => [
-                    ...prevMessages,
-                    {
-                        message: formattedResponse,
-                        sender: "Hercules",
-                        direction: "incoming",
-                    },
-                    ]);
-                }
-            } catch (error) {
-                console.error("Error processing message:", error);
-                setMessages(prevMessages => [
-                ...prevMessages,
-                {
-                    message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
-                    sender: "Hercules",
-                    direction: "incoming",
-                },
-                ]);
-            } finally {
-                setIsTyping(false);
-            }
-        } else {
-            let apiMessages = chatMessages.map((messageObject) => {
-                let role = messageObject.sender === "Hercules" ? "assistant" : "user";
-                return { role: role, content: messageObject.message }
-            });
-            
-            const apiRequestBody = {
-                "model": "gpt-4o-mini", 
-                "messages": [
-                systemMessageGeneralConsult,
-                ...apiMessages 
-                ]
-            }
-            
-            try {
-                const response = await fetch("https://api.openai.com/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${API_KEY}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(apiRequestBody)
-                });
-            
-                const data = await response.json();
-            
-                if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-                let rawResponse = data.choices[0].message.content;
-                const formattedResponse = formatResponse(rawResponse);
-                    setMessages(prevMessages => [
-                    ...prevMessages,
-                    {
-                        message: formattedResponse,
-                        sender: "Hercules",
-                        direction: "incoming",
-                    },
-                    ]);
-                }
-            } catch (error) {
-                console.error("Error processing message:", error);
-                setMessages(prevMessages => [
-                ...prevMessages,
-                {
-                    message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
-                    sender: "Hercules",
-                    direction: "incoming",
-                },
-                ]);
-            } finally {
-                setIsTyping(false);
-                setIsRemedyGenerated(true);
-            }
+    if (remedyGenerated) {
+      let apiMessages = chatMessages.map((messageObject) => {
+        let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+        return { role: role, content: messageObject.message }
+      });
+
+      const apiRequestBody = {
+        "model": "gpt-4o-mini",
+        "messages": [
+          systemMessageRemedy,
+          ...apiMessages
+        ]
+      }
+
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(apiRequestBody)
+        });
+
+        const data = await response.json();
+
+        if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+          let rawResponse = data.choices[0].message.content;
+          const formattedResponse = formatResponse(rawResponse);
+          setMessages(prevMessages => [
+            ...prevMessages,
+            {
+              message: formattedResponse,
+              sender: "Hercules",
+              direction: "incoming",
+            },
+          ]);
         }
+      } catch (error) {
+        console.error("Error processing message:", error);
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+            sender: "Hercules",
+            direction: "incoming",
+          },
+        ]);
+      } finally {
+        setIsTyping(false);
+      }
+    } else {
+      let apiMessages = chatMessages.map((messageObject) => {
+        let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+        return { role: role, content: messageObject.message }
+      });
+
+      const apiRequestBody = {
+        "model": "gpt-4o-mini",
+        "messages": [
+          systemMessageRemedy,
+          ...apiMessages
+        ]
+      }
+
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(apiRequestBody)
+        });
+
+        const data = await response.json();
+
+        if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+          let rawResponse = data.choices[0].message.content;
+
+          const formattedResponse = formatResponse(rawResponse);
+          // Parse the workout plan
+          const mealPlan = parseMealPlan(rawResponse);
+          console.log('Parsed meal plan:', mealPlan);
+
+          if (mealPlan.length > 0) {
+            // Get the current user's ID
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (error) throw error;
+            if (user && user.id) {
+              try {
+                await insertMealPlan(mealPlan, user.id);
+                console.log('Meal plan processed and saved successfully');
+              } catch (insertError) {
+                console.error('Failed to insert meal plan:', insertError);
+                // You might want to add a user-friendly error message here
+              }
+            } else {
+              console.warn('No user found. Meal plan not saved to database.');
+            }
+          } else {
+            console.warn('No valid meal plan found in the response.');
+          }
+
+          setMessages(prevMessages => [
+            ...prevMessages,
+            {
+              message: formattedResponse,
+              sender: "Hercules",
+              direction: "incoming",
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error processing message:", error);
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+            sender: "Hercules",
+            direction: "incoming",
+          },
+        ]);
+      } finally {
+        setIsTyping(false);
+        setIsRemedyGenerated(true);
+      }
     }
+  }
 
   return (
     <div className="flex flex-col h-screen flex-grow ml-64 p-8">
-        <div className="flex-grow p-4 md:p-8 overflow-y-auto"> {/* Chat area - full height with scroll */}
-            {messages.map((message, i) => (
-                <div key={i} className={`flex ${message.direction === 'incoming' ? 'justify-start' : 'justify-end'} mb-4`}>
-                    <div className={`p-2 md:p-3 rounded-lg text-left ${message.direction === 'incoming' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-800'} max-w-xs md:max-w-md lg:max-w-lg`}>
-                      <div dangerouslySetInnerHTML={{__html: message.message }} />
-                    </div>
-                </div>
-            ))}
-            {isTyping && (
-                <div className="flex justify-start mb-4">
-                    <div className="text-white p-2 md:p-3 rounded-lg bg-purple-500 max-w-xs md:max-w-md lg:max-w-lg">
-                        Hercules is typing...
-                    </div>
-                </div>
-            )}
-        </div>
-        <div className="p-4 md:p-6">
-            <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(true); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
-                MyMealsChat
-            </button>
-            <button onClick={() => {setIsWorkoutPlan(true); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
-                MyWorkoutChat
-            </button>
-            <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(true);}} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
-                Remedy
-            </button>
-        </div>
-        <div className="mx-4 p-4 md:p-6"> {/* Input area - sticks to bottom */}
-            <input 
-                type="text"
-                placeholder="Type your basketball query here"
-                className="w-full p-2 md:p-3 rounded-lg bg-[#333333] focus:outline-none focus:border-purple-500 text-[#AAAAAA]"
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                        handleSend(e.target.value);
-                        e.target.value = '';
-                    }
-                }}
-            />
-        </div>
+      <div className="flex-grow p-4 md:p-8 bg-gray-100 overflow-y-auto"> {/* Chat area - full height with scroll */}
+        {messages.map((message, i) => (
+          <div key={i} className={`flex ${message.direction === 'incoming' ? 'justify-start' : 'justify-end'} mb-4`}>
+            <div className={`p-2 md:p-3 rounded-lg text-left ${message.direction === 'incoming' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-800'} max-w-xs md:max-w-md lg:max-w-lg`}>
+              <div dangerouslySetInnerHTML={{ __html: message.message }} />
+            </div>
+          </div>
+        ))}
+        {isTyping && (
+          <div className="flex justify-start mb-4">
+            <div className="text-white p-2 md:p-3 rounded-lg bg-purple-500 max-w-xs md:max-w-md lg:max-w-lg">
+              Hercules is typing...
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="py-4">
+        <button onClick={() => { setIsWorkoutPlan(false); setIsMealPlan(true); setIsConsultation(false); setIsRemedy(false); }} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+          MyMealsChat
+        </button>
+        <button onClick={() => { setIsWorkoutPlan(true); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(false); }} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+          MyWorkoutChat
+        </button>
+        <button onClick={() => { setIsWorkoutPlan(false); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(true); }} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+          Remedy
+        </button>
+      </div>
+      <div className="mx-4 p-4 md:p-6 bg-white border-t border-gray-200"> {/* Input area - sticks to bottom */}
+        <input
+          type="text"
+          placeholder="Type your fitness query here"
+          className="w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleSend(e.target.value);
+              e.target.value = '';
+            }
+          }}
+        />
+      </div>
     </div>
   );
 }
