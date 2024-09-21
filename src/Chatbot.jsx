@@ -50,7 +50,6 @@ function Chatbot() {
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
-  const [imageIsLoading, setImageIsLoading] = useState(false);
 
   const handleSend = async (message) => {
     const newMessage = {
