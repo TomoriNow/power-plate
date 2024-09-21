@@ -17,6 +17,47 @@ const systemMessage = {
       They have these INJURY and PHYSICAL CONSTRAINT(S): [USER_INJURIES].
     `
   }
+  
+  const systemMessageWorkoutPlanNotGenerated = {
+    "role": "system",
+    "content": `
+      You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
+      Please generate a 7 WORKOUT PLAN for the user to follow. Each day will consist of ONE WORKOUT OR A REST DAY. Provide a brief introduction to each workout.
+
+        PLEASE STRICTLY FOLLOW THIS FORMAT FOR THE WORKOUT/REST-DAY (ACCORDING TO THE PREFERENCE OF THE USER)
+        DAY 1: 
+        WORKOUT/REST-DAY <workout/rest-day>
+        DAY 2: 
+        WORKOUT/REST-DAY <workout/rest-day>
+        DAY 3: 
+        WORKOUT/REST-DAY <workout/rest-day>
+        DAY 4: 
+        WORKOUT/REST-DAY <workout/rest-day>
+        DAY 5: 
+        WORKOUT/REST-DAY <workout/rest-day>
+        DAY 6: 
+        WORKOUT/REST-DAY <workout/rest-day>
+        DAY 7: 
+        WORKOUT/REST-DAY <workout/rest-day>
+    `
+  }
+  
+  const systemMessageWorkoutPlanGenerated = {
+    "role": "system",
+    "content": `
+      You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
+
+      Please provide consultation to the user regarding their current WORKOUT-PLAN. The consultation could be general questions, questions regarding specific workouts, recommending workouts based on the constraints of the user, among other things. The user will ask about a particular day of a week of their workout plan. 
+
+        THIS IS THEIR CURRENT DAY OF THE WORKOUT PLAN: 
+        XXXXXXXXXX
+
+        KEEP IN MIND THE CONTEXT OF THE USER: 
+        The GOALS of the user is to XXXX
+        They have these ALLERGY(S): XXXXXXXXX . 
+        They have these INJURY and PHYSICAL CONSTRAINT(S):  XXXXX
+    `
+  }
 
 function formatResponse(text) {
   // Replace ### headers with <h3> tags
@@ -72,7 +113,6 @@ function Chatbot() {
     
     setIsTyping(true);
     await processMessageToPlateGPT(newMessages);
-  
   };
   
   
@@ -138,11 +178,11 @@ function Chatbot() {
                       <div dangerouslySetInnerHTML={{__html: message.message }} />
                     </div>
                 </div>
-            ))}
+            ))}``
             {isTyping && (
                 <div className="flex justify-start mb-4">
                     <div className="p-2 md:p-3 rounded-lg bg-blue-500 max-w-xs md:max-w-md lg:max-w-lg">
-                        Hooper-GPT is typing...
+                        Hercules is typing...
                     </div>
                 </div>
             )}
