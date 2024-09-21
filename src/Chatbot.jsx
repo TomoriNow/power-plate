@@ -5,14 +5,256 @@ import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import.meta.env
 
-import processMealPlan from './components/services/processMeal';
-import processMessageToConsult from './components/services/processConsult';
-import processRemedy from './components/services/processRemedy';
-import processWorkoutPlan from './components/services/processWorkout';
+const API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 
+export async function fetchUserData() {
+  useEffect(() => {
+    const user = supabase.auth.user();
+    if (user) {
+      setUserId(user.id); // Get the current user ID
+    }
+  }, []);
+  
+  try {
+    const { data, error } = await supabase
+      .from('users')  // Name of the table
+      .select('*')    // Fetch all columns or specify specific columns
+      .eq('user_id', user.id)  // Fetch based on userId (or any other unique field)
+      .single();
 
+    if (error) throw error;
 
+    return data
+    
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    return null;
+  }
+}
 
+// We'll use an async IIFE to get the current user
+const getCurrentUser = async () => {
+  const user = supabase.auth.user();
+  if (user) {
+    const userData = await fetchUserData();
+    return userData;
+  } else {
+    return null;
+  }
+};
+
+const systemMessageGeneralConsult = {
+  "role": "system",
+  "content": `
+    You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals. Provide an IN-DEPTH and INFORMATIVE general consultation about health and fitness, or any general diagnoses for the user. Please provide real-world references to your explanations whenever possible, and try to be ENCOURAGING and MOTIVATING to the user.
+
+    KEEP IN MIND THE CONTEXT OF THE USER:
+    The WORKOUT PREFERENCE of the user are to: ${getCurrentUser.userWorkoutPreferences}.
+    The User is ${getCurrentUser.userAge} years old, ${getCurrentUser.userGender}, and is located in ${getCurrentUser.userLocation}.
+    They have these ALLERGY(S): ${getCurrentUser.userAllergies}.
+    The BMI of the user is ${getCurrentUser.userBmi}.
+  `
+};
+
+const systemMessageWorkoutPlanNotGenerated = {
+  "role": "system",
+  "content": `
+    You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
+    Please generate a 7 WORKOUT PLAN for the user to follow. Each day will consist of ONE WORKOUT OR A REST DAY. Provide a brief introduction to each workout, and please insert a NEW LINE for every workout DAY.
+      
+    for WORKOUT/REST-DAY, choose one and fill in only [workout] when you choose WORKOUT
+      strictly follow this format:
+      DAY 1: 
+      <WORKOUT/REST-DAY> <workout>
+      
+      DAY 2: 
+      <WORKOUT/REST-DAY> <workout>
+      
+      DAY 3: 
+      <WORKOUT/REST-DAY> <workout>
+      
+      DAY 4: 
+      <WORKOUT/REST-DAY> <workout>
+      
+      DAY 5: 
+      <WORKOUT/REST-DAY> <workout>
+      
+      DAY 6: 
+      <WORKOUT/REST-DAY> <workout>
+      
+      DAY 7: 
+      <WORKOUT/REST-DAY> <workout>
+      
+    Do not write anything before typing DAY 1 
+    
+    KEEP IN MIND THE CONTEXT OF THE USER:
+    The WORKOUT PREFERENCE of the user are to: ${getCurrentUser.userWorkoutPreferences}.
+    The User is ${getCurrentUser.userAge} years old, ${getCurrentUser.userGender}, and is located in ${getCurrentUser.userLocation}.
+    They have these ALLERGY(S): ${getCurrentUser.userAllergies}.
+    The BMI of the user is ${getCurrentUser.userBmi}.
+  `
+};
+
+const systemMessageWorkoutPlanGenerated = {
+  "role": "system",
+  "content": `
+    You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
+
+    Please provide consultation to the user regarding their current WORKOUT-PLAN. The consultation could be general questions, questions regarding specific workouts, recommending workouts based on the constraints of the user, among other things. The user will ask about a particular day of a week of their workout plan. 
+
+    THIS IS THEIR CURRENT DAY OF THE WORKOUT PLAN: 
+    XXXXXXXXXX
+
+    KEEP IN MIND THE CONTEXT OF THE USER:
+    The WORKOUT PREFERENCE of the user are to: ${getCurrentUser.userWorkoutPreferences}.
+    The User is ${getCurrentUser.userAge} years old, ${getCurrentUser.userGender}, and is located in ${getCurrentUser.userLocation}.
+    They have these ALLERGY(S): ${getCurrentUser.userAllergies}.
+    The BMI of the user is ${getCurrentUser.userBmi}.
+  `
+};
+
+const systemMessageMealNotGenerated = {
+  "role": "system",
+  "content": `
+    You are DIonysus. Like the Roman God, you are a symbol of nutrition, health and wellbeing. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
+    Please generate a 7 DAYS MEAL PLAN for the user to follow. Each day will consist of BREAKFAST, LUNCH, and DINNER. Provide JUST A BRIEF introduction to each meal. 
+
+    PLEASE STRICTLY FOLLOW THIS FORMAT; PROVIDE JUST A BRIEF DESCRIPTION OF THE MEAL AND NOT THE RECIPE; MAKE SURE TO INCLUDE THE MEAL FOR EACH DAY OF THE WEEK:
+    strictly follow this format:
+    DAY 1: 
+    BREAKFAST: <Meal>
+    LUNCH:  <Meal>
+    DINNER: <Meal>
+    DAY 2: 
+    BREAKFAST: <Meal>
+    LUNCH: <Meal>
+    DINNER: <Meal>
+    DAY 3: 
+    BREAKFAST: <Meal>
+    LUNCH: <Meal>
+    DINNER: <Meal>
+    DAY 4: 
+    BREAKFAST: <Meal>
+    LUNCH:  <Meal>
+    DINNER: <Meal>
+    DAY 5: 
+    BREAKFAST: <Meal>
+    LUNCH: <Meal>
+    DINNER: <Meal>
+    DAY 6: 
+    BREAKFAST: <Meal>
+    LUNCH: <Meal>
+    DINNER: <Meal>
+    DAY 7: 
+    BREAKFAST: <Meal>
+    LUNCH: <Meal>
+    DINNER: <Meal>
+
+    NOTE: Fill in the <Meal> field with the generated meal
+    
+    Do not write anything before typing DAY 1
+    
+    KEEP IN MIND THE CONTEXT OF THE USER:
+    The WORKOUT PREFERENCE of the user are to: ${getCurrentUser.userWorkoutPreferences}.
+    The User is ${getCurrentUser.userAge} years old, ${getCurrentUser.userGender}, and is located in ${getCurrentUser.userLocation}.
+    They have these ALLERGY(S): ${getCurrentUser.userAllergies}.
+    The BMI of the user is ${getCurrentUser.userBmi}.
+  `
+};
+
+const systemMessageMealGenerated = {
+  "role": "system",
+  "content": `
+    You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
+
+    Please provide consultation to the user regarding their current MEAL-PLAN. The consultation could be general questions, questions regarding recipes, among other things.  The user will ask about a particular day of a week of their meal plan. 
+
+    THIS IS THEIR CURRENT DAY OF THE MEAL PLAN: 
+    XXXXXXXXXX
+
+    KEEP IN MIND THE CONTEXT OF THE USER:
+    The WORKOUT PREFERENCE of the user are to: ${getCurrentUser.userWorkoutPreferences}.
+    The User is ${getCurrentUser.userAge} years old, ${getCurrentUser.userGender}, and is located in ${getCurrentUser.userLocation}.
+    They have these ALLERGY(S): ${getCurrentUser.userAllergies}.
+    The BMI of the user is ${getCurrentUser.userBmi}.
+  `
+};
+
+const systemMessageRemedy = {
+  "role": "system",
+  "content":`
+    You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
+
+    KEEP IN MIND THE CONTEXT OF THE USER:
+    The WORKOUT PREFERENCE of the user are to: ${getCurrentUser.userWorkoutPreferences}.
+    The User is ${getCurrentUser.userAge} years old, ${getCurrentUser.userGender}, and is located in ${getCurrentUser.userLocation}.
+    They have these ALLERGY(S): ${getCurrentUser.userAllergies}.
+    The BMI of the user is ${getCurrentUser.userBmi}.
+
+    HERE IS THE CURRENT MEAL PLAN OF THE USER: 
+
+    GENERATE A NEW MEAL PLAN SUCH THAT IT STILLS IN LINE WITH THE USER GOALS. 
+    PLEASE STRICTLY FOLLOW THIS FORMAT: 
+    DAY 1: 
+    BREAKFAST: <Meal>
+    LUNCH:  <Meal>
+    DINNER: <Meal>
+    DAY 2: 
+    BREAKFAST: <Meal>
+    LUNCH: <Meal>
+    DINNER: <Meal>
+    DAY 3: 
+    BREAKFAST: <Meal>
+    LUNCH: <Meal>
+    DINNER: <Meal>
+    DAY 4: 
+    BREAKFAST: <Meal>
+    LUNCH:  <Meal>
+    DINNER: <Meal>
+    DAY 5: 
+    BREAKFAST: <Meal>
+    LUNCH: <Meal>
+    DINNER: <Meal>
+    DAY 6: 
+    BREAKFAST: <Meal>
+    LUNCH: <Meal>
+    DINNER: <Meal>
+    DAY 7: 
+    BREAKFAST: <Meal>
+    LUNCH: <Meal>
+    DINNER: <Meal>
+
+    NOTE: Fill in the <Meal> field with the generated meal
+  `
+};
+
+function formatResponse(text) {
+  // Replace ### headers with <h3> tags
+  text = text.replace(/^###\s*(.*?)$/gm, '<h3>$1</h3>');
+
+  // Replace **bold** with <strong> tags
+  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  // Replace bullet points (both • and -) at the start of a line with <li> tags
+  text = text.replace(/^[•-]\s*(.*?)$/gm, '<li>$1</li>');
+
+  // Wrap lists in <ul> tags
+  text = text.replace(/(<li>.*<\/li>)\n(?!<li>)/gs, '<ul>$1</ul>\n');
+
+  // Split the text into paragraphs
+  const paragraphs = text.split('\n\n');
+
+  // Wrap each paragraph in a <p> tag, unless it's already a header or list
+  const formattedParagraphs = paragraphs.map(p => {
+    if (p.startsWith('<h3>') || p.startsWith('<ul>')) {
+      return p;
+    }
+    return `<p>${p}</p>`;
+  });
+
+  // Join the paragraphs back together
+  return formattedParagraphs.join('');
+}
 
 
 function Chatbot() {
@@ -35,6 +277,7 @@ function Chatbot() {
   const [workoutGenerated, setIsWorkoutGenerated] = useState(false);
   const [remedyGenerated, setIsRemedyGenerated] = useState(false);
   
+  
 
   const handleSend = async (message) => {
 
@@ -49,7 +292,7 @@ function Chatbot() {
       setMessages(newMessages);
 
       setIsTyping(true);
-      await processMessageToConsult(newMessages, setMessages, setIsTyping);
+      await processMessageToConsult(newMessages);
     } else if (mealPlan) {
         const newMessage = {
             message,
@@ -61,7 +304,7 @@ function Chatbot() {
           setMessages(newMessages);
           
           setIsTyping(true);
-          await processMealPlan(newMessages, mealGenerated, setIsMealGenerated, setMessages, setIsTyping);
+          await processMealPlan(newMessages);
         
     } else if (workoutPlan) {
         const newMessage = {
@@ -74,7 +317,7 @@ function Chatbot() {
           setMessages(newMessages);
           
           setIsTyping(true);
-          await processWorkoutPlan(newMessages, workoutGenerated, setIsWorkoutGenerated, setMessages, setIsTyping);
+          await processWorkoutPlan(newMessages);
         
     } else {
         const newMessage = {
@@ -92,6 +335,385 @@ function Chatbot() {
     }
 
   }
+
+  async function processMealPlan(chatMessages) {
+    // IF THE MEAL PLAN HAS BEEN GENERATED
+    if (mealGenerated) {
+      let apiMessages = chatMessages.map((messageObject) => {
+        let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+        return { role: role, content: messageObject.message }
+      });
+
+      const apiRequestBody = {
+        "model": "gpt-4o-mini",
+        "messages": [
+          systemMessageMealGenerated,
+          ...apiMessages
+        ]
+      }
+
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(apiRequestBody)
+        });
+
+        const data = await response.json();
+
+        if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+          let rawResponse = data.choices[0].message.content;
+          const formattedResponse = formatResponse(rawResponse);
+          setMessages(prevMessages => [
+            ...prevMessages,
+            {
+              message: formattedResponse,
+              sender: "Hercules",
+              direction: "incoming",
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error processing message:", error);
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+            sender: "Hercules",
+            direction: "incoming",
+          },
+        ]);
+      } finally {
+        setIsTyping(false);
+      }
+
+      // IF THE MEAL PLAN HAS NOT BEEN GENERATED
+    } else {
+      let apiMessages = chatMessages.map((messageObject) => {
+        let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+        return { role: role, content: messageObject.message }
+      });
+
+      const apiRequestBody = {
+        "model": "gpt-4o-mini",
+        "messages": [
+          systemMessageMealNotGenerated,
+          ...apiMessages
+        ]
+      }
+
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(apiRequestBody)
+        });
+
+        const data = await response.json();
+
+        if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+          let rawResponse = data.choices[0].message.content;
+          const formattedResponse = formatResponse(rawResponse);
+          setMessages(prevMessages => [
+            ...prevMessages,
+            {
+              message: formattedResponse,
+              sender: "Hercules",
+              direction: "incoming",
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error processing message:", error);
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+            sender: "Hercules",
+            direction: "incoming",
+          },
+        ]);
+      } finally {
+        setIsTyping(false);
+        setIsMealGenerated(true);
+      }
+    }
+
+  }
+
+  //Process General Consultation
+  async function processMessageToConsult(chatMessages) {
+    let apiMessages = chatMessages.map((messageObject) => {
+      let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+      return { role: role, content: messageObject.message }
+    });
+
+    const apiRequestBody = {
+      "model": "gpt-4o-mini",
+      "messages": [
+        systemMessageGeneralConsult,
+        ...apiMessages
+      ]
+    }
+
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(apiRequestBody)
+      });
+
+      const data = await response.json();
+
+      if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+        let rawResponse = data.choices[0].message.content;
+        const formattedResponse = formatResponse(rawResponse);
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            message: formattedResponse,
+            sender: "Hercules",
+            direction: "incoming",
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("Error processing message:", error);
+      setMessages(prevMessages => [
+        ...prevMessages,
+        {
+          message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+          sender: "Hercules",
+          direction: "incoming",
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
+  }
+  
+async function processWorkoutPlan(chatMessages) {
+    if (workoutGenerated) {
+        let apiMessages = chatMessages.map((messageObject) => {
+            let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+            return { role: role, content: messageObject.message }
+          });
+        
+          const apiRequestBody = {
+            "model": "gpt-4o-mini", 
+            "messages": [
+              systemMessageWorkoutPlanGenerated,
+              ...apiMessages 
+            ]
+          }
+        
+          try {
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(apiRequestBody)
+            });
+        
+            const data = await response.json();
+        
+            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+              let rawResponse = data.choices[0].message.content;
+              const formattedResponse = formatResponse(rawResponse);
+                setMessages(prevMessages => [
+                  ...prevMessages,
+                  {
+                    message: formattedResponse,
+                    sender: "Hercules",
+                    direction: "incoming",
+                  },
+                ]);
+            }
+          } catch (error) {
+            console.error("Error processing message:", error);
+            setMessages(prevMessages => [
+              ...prevMessages,
+              {
+                message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+                sender: "Hercules",
+                direction: "incoming",
+              },
+            ]);
+          } finally {
+            setIsTyping(false);
+          }
+    } else {
+        let apiMessages = chatMessages.map((messageObject) => {
+            let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+            return { role: role, content: messageObject.message }
+          });
+        
+          const apiRequestBody = {
+            "model": "gpt-4o-mini", 
+            "messages": [
+              systemMessageWorkoutPlanNotGenerated,
+              ...apiMessages 
+            ]
+          }
+        
+          try {
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(apiRequestBody)
+            });
+        
+            const data = await response.json();
+        
+            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+              let rawResponse = data.choices[0].message.content;
+              const formattedResponse = formatResponse(rawResponse);
+                setMessages(prevMessages => [
+                  ...prevMessages,
+                  {
+                    message: formattedResponse,
+                    sender: "Hercules",
+                    direction: "incoming",
+                  },
+                ]);
+            }
+          } catch (error) {
+            console.error("Error processing message:", error);
+            setMessages(prevMessages => [
+              ...prevMessages,
+              {
+                message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+                sender: "Hercules",
+                direction: "incoming",
+              },
+            ]);
+          } finally {
+            setIsTyping(false);
+            setIsWorkoutGenerated(true);
+          }
+    }
+  }
+  
+  async function processRemedy(chatMessages) {
+        if (remedyGenerated) {
+            let apiMessages = chatMessages.map((messageObject) => {
+                let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+                return { role: role, content: messageObject.message }
+            });
+            
+            const apiRequestBody = {
+                "model": "gpt-4o-mini", 
+                "messages": [
+                systemMessageGeneralConsult,
+                ...apiMessages 
+                ]
+            }
+            
+            try {
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(apiRequestBody)
+                });
+            
+                const data = await response.json();
+            
+                if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+                let rawResponse = data.choices[0].message.content;
+                const formattedResponse = formatResponse(rawResponse);
+                    setMessages(prevMessages => [
+                    ...prevMessages,
+                    {
+                        message: formattedResponse,
+                        sender: "Hercules",
+                        direction: "incoming",
+                    },
+                    ]);
+                }
+            } catch (error) {
+                console.error("Error processing message:", error);
+                setMessages(prevMessages => [
+                ...prevMessages,
+                {
+                    message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+                    sender: "Hercules",
+                    direction: "incoming",
+                },
+                ]);
+            } finally {
+                setIsTyping(false);
+            }
+        } else {
+            let apiMessages = chatMessages.map((messageObject) => {
+                let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+                return { role: role, content: messageObject.message }
+            });
+            
+            const apiRequestBody = {
+                "model": "gpt-4o-mini", 
+                "messages": [
+                systemMessageGeneralConsult,
+                ...apiMessages 
+                ]
+            }
+            
+            try {
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(apiRequestBody)
+                });
+            
+                const data = await response.json();
+            
+                if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+                let rawResponse = data.choices[0].message.content;
+                const formattedResponse = formatResponse(rawResponse);
+                    setMessages(prevMessages => [
+                    ...prevMessages,
+                    {
+                        message: formattedResponse,
+                        sender: "Hercules",
+                        direction: "incoming",
+                    },
+                    ]);
+                }
+            } catch (error) {
+                console.error("Error processing message:", error);
+                setMessages(prevMessages => [
+                ...prevMessages,
+                {
+                    message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+                    sender: "Hercules",
+                    direction: "incoming",
+                },
+                ]);
+            } finally {
+                setIsTyping(false);
+                setIsRemedyGenerated(true);
+            }
+        }
+    }
 
   return (
     <div className="flex flex-col h-screen">
