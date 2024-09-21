@@ -62,103 +62,13 @@ function Chatbot() {
     const newMessages = [...messages, newMessage];
     setMessages(newMessages);
     
-    if (message.toLowerCase().includes("image of")) {
-      const imageDescription = message.match(/image of (.*)/i)[1];
-      setImageIsLoading(true);
-      await fetchAndSetImage(imageDescription);
-      console.log("entered first case: image of");
-    } else if (message.toLowerCase().includes("picture of")) {
-      const imageDescription2 = message.match(/picture of (.*)/i)[1];
-      setImageIsLoading(true);
-      await fetchAndSetImage(imageDescription2);
-      console.log("entered second case: picture of");
-    } else if (message.toLowerCase().includes("show me")) {
-      const imageDescription3 = message.match(/show me (.*)/i)[1];
-      setImageIsLoading(true);
-      await fetchAndSetImage(imageDescription3);
-      console.log("entered third case: show me");
-    } else if (message.toLowerCase().includes("show how")) {
-      const imageDescription4 = message.match(/show how (.*)/i)[1];
-      setImageIsLoading(true);
-      await fetchAndSetImage(imageDescription4);
-      console.log("entered fourth case: show how");
-    } else if (message.toLowerCase().includes("show a")) {
-      const imageDescription5 = message.match(/show a (.*)/i)[1];
-      setImageIsLoading(true);
-      await fetchAndSetImage(imageDescription5);
-      console.log("entered fifth case: show a");
-    } else if (message.toLowerCase().includes("visualize")) {
-      const imageDescription6 = message.match(/visualize (.*)/i)[1];
-      setImageIsLoading(true);
-      await fetchAndSetImage(imageDescription6);
-      console.log("entered sixth case: visualize");
-    } else if (message.toLowerCase().includes("visualization")) {
-      const imageDescription7 = message.match(/visualization (.*)/i)[1];
-      setImageIsLoading(true);
-      await fetchAndSetImage(imageDescription7);
-      console.log("entered seventh case: visualization"); 
-    } else {
-      setIsTyping(true);
-      await processMessageToHooperGPT(newMessages);
-      console.log("entered default case");
-    }
+    setIsTyping(true);
+    await processMessageToPlateGPT(newMessages);
+  
   };
   
-  // DALL-E API Function to Generate an Image
-  async function fetchAndSetImage(prompt) {
-    try {
-      const response = await fetch("https://api.openai.com/v1/images/generations", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          prompt: prompt,   // This should be a text description
-          n: 1,             // Number of images to generate
-          size: "1024x1024" // Size of the image
-        })
-      });
   
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error("API error response:", errorBody);
-        throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
-      }
-  
-      const data = await response.json();
-  
-      if (data.data && data.data.length > 0) {
-        const imageUrl = data.data[0].url;
-  
-        // Add the image as a new message
-        setMessages(prevMessages => [
-          ...prevMessages,
-          {
-            message: `<img src="${imageUrl}" alt="Generated Image" style="max-width: 100%; border-radius: 8px;" />`,
-            sender: "HooperGPT",
-            direction: "incoming",
-          },
-        ]);
-      } else {
-        console.error("Unexpected API response structure:", data);
-      }
-    } catch (error) {
-      console.error("Error generating image:", error);
-      setMessages(prevMessages => [
-        ...prevMessages,
-        {
-          message: `Sorry, I couldn't generate the image. Please try again later.`,
-          sender: "HooperGPT",
-          direction: "incoming",
-        },
-      ]);
-    } finally {
-      setImageIsLoading(false);
-    }
-  }
-  
-  async function processMessageToHooperGPT(chatMessages) {
+  async function processMessageToPlateGPT(chatMessages) {
     let apiMessages = chatMessages.map((messageObject) => {
       let role = messageObject.sender === "HooperGPT" ? "assistant" : "user";
       return { role: role, content: messageObject.message }
