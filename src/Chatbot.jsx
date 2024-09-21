@@ -258,7 +258,6 @@ function formatResponse(text) {
 
 
 function Chatbot() {
-  //const [session, setSession] = useState(null)
   const [messages, setMessages] = useState([
     {
       message: "Hello, I'm Hercules! I'm here to assist you in your fitness journey!",
@@ -716,31 +715,31 @@ async function processWorkoutPlan(chatMessages) {
     }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen flex-grow ml-64 p-8">
         <div className="flex-grow p-4 md:p-8 bg-gray-100 overflow-y-auto"> {/* Chat area - full height with scroll */}
             {messages.map((message, i) => (
                 <div key={i} className={`flex ${message.direction === 'incoming' ? 'justify-start' : 'justify-end'} mb-4`}>
-                    <div className={`p-2 md:p-3 rounded-lg text-left ${message.direction === 'incoming' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'} max-w-xs md:max-w-md lg:max-w-lg`}>
+                    <div className={`p-2 md:p-3 rounded-lg text-left ${message.direction === 'incoming' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-800'} max-w-xs md:max-w-md lg:max-w-lg`}>
                       <div dangerouslySetInnerHTML={{__html: message.message }} />
                     </div>
                 </div>
             ))}
             {isTyping && (
                 <div className="flex justify-start mb-4">
-                    <div className="text-white p-2 md:p-3 rounded-lg bg-blue-500 max-w-xs md:max-w-md lg:max-w-lg">
+                    <div className="text-white p-2 md:p-3 rounded-lg bg-purple-500 max-w-xs md:max-w-md lg:max-w-lg">
                         Hercules is typing...
                     </div>
                 </div>
             )}
         </div>
         <div className="py-4">
-            <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(true); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+            <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(true); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
                 MyMealsChat
             </button>
-            <button onClick={() => {setIsWorkoutPlan(true); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+            <button onClick={() => {setIsWorkoutPlan(true); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
                 MyWorkoutChat
             </button>
-            <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(true);}} className="mx-4 rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+            <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(true);}} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
                 Remedy
             </button>
         </div>
@@ -748,7 +747,7 @@ async function processWorkoutPlan(chatMessages) {
             <input 
                 type="text"
                 placeholder="Type your basketball query here"
-                className="w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                className="w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                         handleSend(e.target.value);
