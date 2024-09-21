@@ -34,6 +34,10 @@ export async function fetchUserData() {
   }
 }
 
+export async function fetchMealPlanData() {
+  useEffect(() => {}, []);
+}
+
 // We'll use an async IIFE to get the current user
 const getCurrentUser = async () => {
   const user = supabase.auth.getUser();
@@ -44,6 +48,14 @@ const getCurrentUser = async () => {
     return null;
   }
 };
+
+const getMealPlanUser = async () => {
+  const user = supabase.auth.getUser();
+  if (user){
+    const mealPlanData = await fetchMealPlanData();
+    return mealPlanData;
+  }
+}
 
 const systemMessageGeneralConsult = {
   "role": "system",
@@ -320,7 +332,20 @@ function Chatbot() {
           setIsTyping(true);
           await processWorkoutPlan(newMessages);
         
-    } else {
+    } else if (remedy){
+        const newMessage = {
+            message,
+            direction: 'outgoing',
+            sender: "user"
+          };
+        
+          const newMessages = [...messages, newMessage];
+          setMessages(newMessages);
+          
+          setIsTyping(true);
+          await processRemedy(newMessages);
+    } 
+    else {
         const newMessage = {
             message,
             direction: 'outgoing',
