@@ -61,11 +61,12 @@ const Survey = ({ supabase, userId, onProfileComplete }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Complete Your Profile</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+    <div className="flex h-screen bg-gray-100 items-center justify-center">
+      <div className="bg-black p-8 rounded-lg shadow-md w-full max-w-md">
+        <h2 className="absolute top-0 text-2xl font-regular mb-6 text-white text-center">Let me know more about you</h2>
+        <hr />
+        <form onSubmit={handleSubmit} className="space-y-4 my-2">
+          <div className='text-white'>
             <label className="block mb-1">Weight (kg)</label>
             <input
               type="number"
@@ -76,7 +77,7 @@ const Survey = ({ supabase, userId, onProfileComplete }) => {
               required
             />
           </div>
-          <div>
+          <div className='text-white'>
             <label className="block mb-1">Height (cm)</label>
             <input
               type="number"
@@ -87,7 +88,7 @@ const Survey = ({ supabase, userId, onProfileComplete }) => {
               required
             />
           </div>
-          <div>
+          <div className='text-white'>
             <label className="block mb-1">Age</label>
             <input
               type="number"
@@ -98,7 +99,7 @@ const Survey = ({ supabase, userId, onProfileComplete }) => {
               required
             />
           </div>
-          <div>
+          <div className='text-white'>
             <label className="block mb-1">Gender</label>
             <select
               name="gender"
@@ -113,7 +114,7 @@ const Survey = ({ supabase, userId, onProfileComplete }) => {
               <option value="Other">Other</option>
             </select>
           </div>
-          <div>
+          <div className='text-white'>
             <label className="block mb-1">Location</label>
             <input
               type="text"
@@ -124,7 +125,7 @@ const Survey = ({ supabase, userId, onProfileComplete }) => {
               required
             />
           </div>
-          <div>
+          <div className='text-white'>
             <label className="block mb-1">Workout Preferences</label>
             <textarea
               name="workout_preferences"
@@ -135,7 +136,7 @@ const Survey = ({ supabase, userId, onProfileComplete }) => {
               required
             ></textarea>
           </div>
-          <div>
+          <div className='text-white'>
             <label className="block mb-1">Allergies</label>
             <textarea
               name="allergies"

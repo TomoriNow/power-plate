@@ -98,7 +98,7 @@ const CustomAuth = ({ supabase }) => {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 bg-black text-white border border-white rounded placeholder-white focus:outline-none focus:ring-2 focus:ring-white"
+          className="w-full p-2 bg-black text-white border border-white rounded placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white"
           required
         />
         <input
@@ -106,7 +106,7 @@ const CustomAuth = ({ supabase }) => {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 bg-black text-white border border-white rounded placeholder-white focus:outline-none focus:ring-2 focus:ring-white"
+          className="w-full p-2 mb-8 bg-black text-white border border-white rounded placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white"
           required
         />
         {isSignUp && (
@@ -115,7 +115,7 @@ const CustomAuth = ({ supabase }) => {
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-2 bg-black text-white border border-white rounded placeholder-white focus:outline-none focus:ring-2 focus:ring-white"
+            className="w-full p-2 bg-black text-white border border-white rounded placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white"
             required
           />
         )}
