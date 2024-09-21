@@ -1,3 +1,60 @@
+import { supabase } from '../../supabaseClient';
+import { useState, useEffect } from 'react';
+
+// async function getUserAttributes() {
+//   try {
+//     const { data, error } = await supabase
+//       .from("users")
+//       .select("*")
+//       .limit(10)
+      
+//       if (error) throw error;
+//       if (data != null) {
+//         setProducts(data);
+//       }
+//   } catch (error) {
+//     alert(error.message)
+//   }
+// }
+// useEffect(() => {
+//   getProducts();
+// }, [])
+
+const [users, setUsers] = useState([]);
+const [userAge, setUserAge] = useState(0);
+const [userGender, setUserGender] = useState('');
+const [userLocation, setUserLocation] = useState('');
+const [userBmi, setUserBmi] = useState(0.0);
+const [userWorkoutPreferences, setUserWorkoutPreferences] = useState('');
+const [userAllergies, setUserAllergies] = useState('');
+
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      let userId = users.map((user) => {
+        userId = user.user_id
+      })
+      
+      const { data, error } = await supabase
+        .from('users')
+        .select('age', 'gender', 'location', 'bmi', 'workout_preferences', 'allergies')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user data:', error);
+      } else if (data) {
+        setUserAge(data.age);
+        setUserGender(data.gender);
+        setUserLocation(data.location);
+        setUserBmi(data.bmi);
+        setUserWorkoutPreferences(data.workout_preferences);
+        setUserAllergies(data.allergies);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
 export const systemMessageGeneralConsult = {
     "role": "system",
@@ -5,9 +62,9 @@ export const systemMessageGeneralConsult = {
         You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals. Provide an IN-DEPTH and INFORMATIVE general consultation about health and fitness, or any general diagnoses for the user. Please provide real-world references to your explanations whenever possible, and try to be ENCOURAGING and MOTIVATING to the user.
     
         KEEP IN MIND THE CONTEXT OF THE USER:
-        The GOALS of the user are to: [USER_GOALS].
-        They have these ALLERGY(S): [USER_ALLERGIES].
-        They have these INJURY and PHYSICAL CONSTRAINT(S): [USER_INJURIES].
+        The GOALS of the user are to: ${userGoals}.
+        They have these ALLERGY(S): ${userAllergies}.
+        They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
       `
   }
   
@@ -43,9 +100,9 @@ export const systemMessageWorkoutPlanNotGenerated = {
        Do not write anything before typing DAY 1 
        
        KEEP IN MIND THE CONTEXT OF THE USER: 
-       The GOALS of the user is to [UserGoals]
-       They have these ALLERGY(S): [UserAllergy] . 
-       They have these INJURY and PHYSICAL CONSTRAINT(S):  [UserInjury]
+       The GOALS of the user is to ${userGoals}.
+       They have these ALLERGY(S): ${userAllergies}. 
+       They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
       `
   }
   
@@ -60,9 +117,9 @@ export const systemMessageWorkoutPlanGenerated = {
           XXXXXXXXXX
   
           KEEP IN MIND THE CONTEXT OF THE USER: 
-          The GOALS of the user is to XXXX
-          They have these ALLERGY(S): XXXXXXXXX . 
-          They have these INJURY and PHYSICAL CONSTRAINT(S):  XXXXX
+          The GOALS of the user is to ${userGoals}.
+          They have these ALLERGY(S):  ${userAllergies} . 
+          They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
       `
   }
   
@@ -110,9 +167,9 @@ export const systemMessageMealNotGenerated = {
         Do not write anything before typing DAY 1
         
         KEEP IN MIND THE CONTEXT OF THE USER: 
-        The GOALS of the user is [USER GOALS].
-        They have these ALLERGY(S): [USER ALLERGIES]. 
-        They have these INJURY and PHYSICAL CONSTRAINT(S):  [USER INJURIES].
+        The GOALS of the user is to ${userGoals}.
+        They have these ALLERGY(S):  ${userAllergies}. 
+        They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
       `
   }
   
@@ -127,9 +184,9 @@ export const systemMessageMealGenerated = {
       XXXXXXXXXX
   
       KEEP IN MIND THE CONTEXT OF THE USER: 
-      The GOALS of the user is to XXXX
-      They have these ALLERGY(S): XXXXXXXXX . 
-      They have these INJURY and PHYSICAL CONSTRAINT(S):  XXXXXXXX
+      The GOALS of the user is to ${userGoals}.
+      They have these ALLERGY(S):  ${userAllergies}. 
+      They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
   
     `
   }
@@ -140,9 +197,9 @@ export const systemMessageRemedy = {
       You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
   
       KEEP IN MIND THE CONTEXT OF THE USER: 
-      The GOALS of the user is to XXXX
-      They have these ALLERGY(S): XXXXXXXXX . 
-      They have these INJURY and PHYSICAL CONSTRAINT(S):  XXXXX
+      The GOALS of the user is to ${userGoals}.
+      They have these ALLERGY(S):  ${userAllergies}. 
+      They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
   
       HERE IS THE CURRENT MEAL PLAN OF THE USER: 
   
