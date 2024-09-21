@@ -44,7 +44,7 @@ export async function fetchMealPlanData() {
   try {
     const { data, error } = await supabase
       .from('meal_plans')
-      .select('meal')
+      .select('meal_plan')
       .eq('user_id', user.id)
       .order('day', { ascending: true });
 
