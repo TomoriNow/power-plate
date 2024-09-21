@@ -6,6 +6,8 @@ import CustomAuth from './CustomAuth'
 import Survey from './Survey'
 import Chatbot from './Chatbot'
 import Landing from './Landing'
+import Workouts from './Workouts'
+import Meals from './Meals'
 
 const ANON_KEY = import.meta.env.VITE_ANON_API_KEY;
 const supabase = createClient('https://lufswepdkuvvgsrmqist.supabase.co', ANON_KEY)
@@ -140,6 +142,24 @@ function App() {
               element={
                 <ProtectedRoute isProfileComplete={isProfileComplete} isLoading={isLoading}>
                   <Chatbot />
+                  <Navbar onLogout={handleLogout} username={username} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/workouts"
+              element={
+                <ProtectedRoute isProfileComplete={isProfileComplete} isLoading={isLoading}>
+                  <Workouts />
+                  <Navbar onLogout={handleLogout} username={username} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meals"
+              element={
+                <ProtectedRoute isProfileComplete={isProfileComplete} isLoading={isLoading}>
+                  <Meals />
                   <Navbar onLogout={handleLogout} username={username} />
                 </ProtectedRoute>
               }
