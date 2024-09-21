@@ -117,7 +117,7 @@ function App() {
               path="/"
               element={
                 <ProtectedRoute isProfileComplete={isProfileComplete} isLoading={isLoading}>
-                  <Landing />
+                  <Landing username={username}/>
                 </ProtectedRoute>
               }
             />

@@ -9,16 +9,16 @@ const Navbar = ({ onLogout, username }) => {
       </div>
       <div className="flex flex-col w-5/6 mx-auto space-y-2">
       <span className="block h-16 px-3 text-lg">Hello {username}!</span>
+      <Link to="/meals" className="block w-full h-11 px-3 py-2.5 text-white hover:bg-[#444444] rounded-lg">
+          <div class="flex flex-row h-full">
+            <img src="src/assets/Food-s.png" class="size-6 mr-4" />
+            <h3>MyMeals</h3>
+          </div>
+        </Link>
         <Link to="/workouts" className="block w-full h-11 px-3 py-2.5 text-white hover:bg-[#444444] rounded-lg">
           <div class="flex flex-row h-full">
             <img src="src/assets/Workout-s.png" class="size-6 mr-4" />
-            <h3>My Workouts</h3>
-          </div>
-        </Link>
-        <Link to="/meals" className="block w-full h-11 px-3 py-2.5 text-white hover:bg-[#444444] rounded-lg">
-          <div class="flex flex-row h-full">
-            <img src="src/assets/Food-s.png" class="size-6 mr-4" />
-            <h3>My Meals</h3>
+            <h3>MyWorkout</h3>
           </div>
         </Link>
         <Link to="/chat" className="block w-full h-11 px-3 py-2.5 text-white hover:bg-[#444444] rounded-lg">
