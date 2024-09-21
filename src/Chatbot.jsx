@@ -169,6 +169,7 @@ function Chatbot() {
   const [workoutPlan, setIsWorkoutPlan] = useState(false);
   const [remedy, setIsRemedy] = useState(false);
   const [mealGenerated, setIsMealGenerated] = useState(false);
+  const [workoutGenerated, setIsWorkoutGenerated] = useState(false);
   
   
 
@@ -355,6 +356,113 @@ function Chatbot() {
       ]);
     } finally {
       setIsTyping(false);
+    }
+  }
+  
+async function processWorkoutPlan(chatMessages) {
+    if (workoutGenerated) {
+        let apiMessages = chatMessages.map((messageObject) => {
+            let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+            return { role: role, content: messageObject.message }
+          });
+        
+          const apiRequestBody = {
+            "model": "gpt-4o-mini", 
+            "messages": [
+              systemMessageWorkoutPlanGenerated,
+              ...apiMessages 
+            ]
+          }
+        
+          try {
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(apiRequestBody)
+            });
+        
+            const data = await response.json();
+        
+            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+              let rawResponse = data.choices[0].message.content;
+              const formattedResponse = formatResponse(rawResponse);
+                setMessages(prevMessages => [
+                  ...prevMessages,
+                  {
+                    message: formattedResponse,
+                    sender: "Hercules",
+                    direction: "incoming",
+                  },
+                ]);
+            }
+          } catch (error) {
+            console.error("Error processing message:", error);
+            setMessages(prevMessages => [
+              ...prevMessages,
+              {
+                message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+                sender: "Hercules",
+                direction: "incoming",
+              },
+            ]);
+          } finally {
+            setIsTyping(false);
+          }
+    } else {
+        let apiMessages = chatMessages.map((messageObject) => {
+            let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+            return { role: role, content: messageObject.message }
+          });
+        
+          const apiRequestBody = {
+            "model": "gpt-4o-mini", 
+            "messages": [
+              systemMessageWorkoutPlanNotGenerated,
+              ...apiMessages 
+            ]
+          }
+        
+          try {
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(apiRequestBody)
+            });
+        
+            const data = await response.json();
+        
+            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+              let rawResponse = data.choices[0].message.content;
+              const formattedResponse = formatResponse(rawResponse);
+                setMessages(prevMessages => [
+                  ...prevMessages,
+                  {
+                    message: formattedResponse,
+                    sender: "Hercules",
+                    direction: "incoming",
+                  },
+                ]);
+            }
+          } catch (error) {
+            console.error("Error processing message:", error);
+            setMessages(prevMessages => [
+              ...prevMessages,
+              {
+                message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
+                sender: "Hercules",
+                direction: "incoming",
+              },
+            ]);
+          } finally {
+            setIsTyping(false);
+            setIsWorkoutGenerated(true);
+          }
     }
   }
 
