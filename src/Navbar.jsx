@@ -3,17 +3,38 @@ import { Link } from 'react-router-dom';
 
 const Navbar = ({ onLogout, username }) => {
   return (
-    <nav className="bg-gray-800 text-white h-screen w-56 fixed left-0 top-0 flex flex-col justify-between">
+    <nav className="fixed left-0 flex flex-col h-screen w-1/6 py-6 bg-[#333333] text-white">
       <div className="p-4">
-        <Link to="/" className="text-4xl mb-8 font-bold block text-purple-500">PowerPlate</Link>
-        <span className="mt-5 text-lg block mb-8">Hello {username}!</span>
+        <Link to="/" className="text-4xl mb-8 font-bold block text-[#C87FEB]">PowerPlate</Link>
       </div>
-      <div className="flex flex-col p-4">
-        <Link to="/workouts" className="text-white hover:text-purple-500 px-3 py-2 rounded mb-2">My Workouts</Link>
-        <Link to="/meals" className="text-white hover:text-purple-500 px-3 py-2 rounded mb-2">My Meals</Link>
-        <Link to="/chat" className="text-white hover:text-purple-500 px-3 py-2 rounded mb-2">Chat With Hercules</Link>
-        <Link to="/" className="text-white hover:text-purple-500 px-3 py-2 rounded mb-2">Home</Link>
-        <button onClick={onLogout} className="bg-red-500 hover:bg-red-600 px-3 py-2 rounded mt-4">Logout</button>
+      <div className="flex flex-col w-5/6 mx-auto space-y-2">
+      <span className="block h-16 px-3 text-lg">Hello {username}!</span>
+        <Link to="/workouts" className="block w-full h-11 px-3 py-2.5 text-white hover:bg-[#444444] rounded-lg">
+          <div class="flex flex-row h-full">
+            <img src="src/assets/Workout-s.png" class="size-6 mr-4" />
+            <h3>My Workouts</h3>
+          </div>
+        </Link>
+        <Link to="/meals" className="block w-full h-11 px-3 py-2.5 text-white hover:bg-[#444444] rounded-lg">
+          <div class="flex flex-row h-full">
+            <img src="src/assets/Food-s.png" class="size-6 mr-4" />
+            <h3>My Meals</h3>
+          </div>
+        </Link>
+        <Link to="/chat" className="block w-full h-11 px-3 py-2.5 text-white hover:bg-[#444444] rounded-lg">
+          <div class="flex flex-row h-full">
+            <img src="src/assets/Chat-s.png" class="size-6 mr-4" />
+            <h3>Chat</h3>
+          </div>
+        </Link>
+        <hr />
+        <Link to="/" className="block w-full h-11 px-3 py-2.5 text-white hover:bg-[#444444] rounded-lg">
+          <div class="flex flex-row h-full">
+            <img src="src/assets/home-s.png" class="size-6 mr-4" />
+            <h3>Home</h3>
+          </div>
+        </Link>
+        <button onClick={onLogout} className="absolute bottom-5 w-4/5 bg-red-500 hover:bg-red-600 px-3 py-2 rounded-lg">Logout</button>
       </div>
     </nav>
   );
