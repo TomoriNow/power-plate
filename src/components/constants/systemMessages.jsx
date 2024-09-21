@@ -65,7 +65,6 @@ export const systemMessageGeneralConsult = {
         The WORKOUT PREFERENCE of the user are to: ${userWorkoutPreferences}.
         The User is ${userAge} years old, ${userGender}, and is located in ${userLocation}.
         They have these ALLERGY(S): ${userAllergies}.
-        They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
         The BMI of the user is ${userBmi}.
       `
   }
@@ -105,7 +104,6 @@ export const systemMessageWorkoutPlanNotGenerated = {
         The WORKOUT PREFERENCE of the user are to: ${userWorkoutPreferences}.
         The User is ${userAge} years old, ${userGender}, and is located in ${userLocation}.
         They have these ALLERGY(S): ${userAllergies}.
-        They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
         The BMI of the user is ${userBmi}.
       `
   }
@@ -124,7 +122,6 @@ export const systemMessageWorkoutPlanGenerated = {
         The WORKOUT PREFERENCE of the user are to: ${userWorkoutPreferences}.
         The User is ${userAge} years old, ${userGender}, and is located in ${userLocation}.
         They have these ALLERGY(S): ${userAllergies}.
-        They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
         The BMI of the user is ${userBmi}.
       `
   }
@@ -176,7 +173,6 @@ export const systemMessageMealNotGenerated = {
       The WORKOUT PREFERENCE of the user are to: ${userWorkoutPreferences}.
       The User is ${userAge} years old, ${userGender}, and is located in ${userLocation}.
       They have these ALLERGY(S): ${userAllergies}.
-      They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
       The BMI of the user is ${userBmi}.
       `
   }
@@ -195,7 +191,6 @@ export const systemMessageMealGenerated = {
     The WORKOUT PREFERENCE of the user are to: ${userWorkoutPreferences}.
     The User is ${userAge} years old, ${userGender}, and is located in ${userLocation}.
     They have these ALLERGY(S): ${userAllergies}.
-    They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
     The BMI of the user is ${userBmi}.
   
     `
@@ -210,7 +205,6 @@ export const systemMessageRemedy = {
       The WORKOUT PREFERENCE of the user are to: ${userWorkoutPreferences}.
       The User is ${userAge} years old, ${userGender}, and is located in ${userLocation}.
       They have these ALLERGY(S): ${userAllergies}.
-      They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
       The BMI of the user is ${userBmi}.
   
       HERE IS THE CURRENT MEAL PLAN OF THE USER: 

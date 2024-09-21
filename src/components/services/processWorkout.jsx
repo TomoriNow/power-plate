@@ -2,7 +2,6 @@ import {
      systemMessageWorkoutPlanGenerated, 
     systemMessageWorkoutPlanNotGenerated 
   } from '../constants/systemMessages';
-
 import.meta.env  
 
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY 
@@ -122,6 +121,23 @@ async function processWorkoutPlan(chatMessages, workoutGenerated, setIsWorkoutGe
                     direction: "incoming",
                   },
                 ]);
+
+              const parsed_workout = parseWorkouts(formattedResponse);
+              const { error: updateError } = await supabase
+              .from('meal')
+              .update({
+                parsed_workout.map((day, index) => {
+                  return {day: day.day, workout: day.workout}
+                })
+              })
+              .eq('user_id', userId);
+        
+            if (updateError) {
+              setError("Error updating user profile. Please try again.");
+            } else {
+              onProfileComplete(); // Call this function to update the state in App.jsx
+              navigate('/'); // Redirect to main app
+            }
             }
           } catch (error) {
             console.error("Error processing message:", error);
@@ -139,5 +155,28 @@ async function processWorkoutPlan(chatMessages, workoutGenerated, setIsWorkoutGe
           }
     }
   }
+const parseWorkouts = (text) => {
+    // Split the text into lines, filter out empty lines
+    const lines = text.split("\n").filter((line) => line.trim() !== "");
+
+    // Process each day and get the workout
+    const workouts = lines.reduce((acc, line) => {
+      // Check for "DAY" followed by a number
+      const dayMatch = line.match(/DAY (\d+):/);
+      if (dayMatch) {
+        // Start a new workout entry for this day
+        acc.push({ day: `Day ${dayMatch[1]}`, workout: "" });
+      } else {
+        // This line contains workout/rest-day information
+        const workout = line.trim();
+        if (acc.length > 0) {
+          acc[acc.length - 1].workout = workout;
+        }
+      }
+      return acc;
+    }, []);
+
+    return workouts;
+  };
 
 export default processWorkoutPlan

@@ -125,6 +125,7 @@ async function processMealPlan(chatMessages, mealGenerated, setIsMealGenerated, 
             direction: "incoming",
           },
         ]);
+        const parsed_meal = parseMeals(formattedResponse);
       }
     } catch (error) {
       console.error("Error processing message:", error);
@@ -139,10 +140,36 @@ async function processMealPlan(chatMessages, mealGenerated, setIsMealGenerated, 
     } finally {
       setIsTyping(false);
       setIsMealGenerated(true);
+
+
     }
   }
 
 }
+
+const parseMeals = (text) => {
+  // Split the text by days using "DAY " as a separator
+  const days = text.split(/DAY \d+:/).filter((day) => day.trim() !== "");
+
+  // Map each day to an object containing its meals
+const meals = days.map((dayText, index) => {
+    const dayNumber = index + 1;
+
+    // Extract meals for breakfast, lunch, and dinner
+    const breakfastMatch = dayText.match(/BREAKFAST:\s*<(.*?)>/);
+    const lunchMatch = dayText.match(/LUNCH:\s*<(.*?)>/);
+    const dinnerMatch = dayText.match(/DINNER:\s*<(.*?)>/);
+
+    return {
+      day: `Day ${dayNumber}`,
+      breakfast: breakfastMatch ? breakfastMatch[1] : "Not specified",
+      lunch: lunchMatch ? lunchMatch[1] : "Not specified",
+      dinner: dinnerMatch ? dinnerMatch[1] : "Not specified",
+    };
+  });
+
+  return meals;
+};
 
 
 export default processMealPlan

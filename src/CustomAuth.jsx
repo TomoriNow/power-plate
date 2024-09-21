@@ -77,6 +77,7 @@ const CustomAuth = ({ supabase }) => {
   };
 
   return (
+
     <div className="space-y-4">
       <div className="flex justify-center space-x-4">
         <button
