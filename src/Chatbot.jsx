@@ -100,7 +100,6 @@ const systemMessageWorkoutPlanGenerated = {
   "content": `
     You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
 
-
     Please provide consultation to the user regarding their current WORKOUT-PLAN. The consultation could be general questions, questions regarding specific workouts, recommending workouts based on the constraints of the user, among other things. The user will ask about a particular day of a week of their workout plan. 
 
     THIS IS THEIR CURRENT DAY OF THE WORKOUT PLAN: 
@@ -253,7 +252,6 @@ function formatResponse(text) {
     return `<p>${p}</p>`;
   });
 
-
   // Join the paragraphs back together
   return formattedParagraphs.join('');
 }
@@ -269,7 +267,7 @@ function Chatbot() {
       direction: "incoming"
     }
   ]);
-  
+
   const [isTyping, setIsTyping] = useState(false);
   const [consultation, setIsConsultation] = useState(true);
   const [mealPlan, setIsMealPlan] = useState(false);
@@ -277,12 +275,12 @@ function Chatbot() {
   const [remedy, setIsRemedy] = useState(false);
   const [mealGenerated, setIsMealGenerated] = useState(false);
   const [workoutGenerated, setIsWorkoutGenerated] = useState(false);
-  
+  const [remedyGenerated, setIsRemedyGenerated] = useState(false);
   
   
 
   const handleSend = async (message) => {
-    
+
     if (consultation) {
       const newMessage = {
         message,
@@ -307,267 +305,35 @@ function Chatbot() {
           
           setIsTyping(true);
           await processMealPlan(newMessages);
-
         
     } else if (workoutPlan) {
+        const newMessage = {
+            message,
+            direction: 'outgoing',
+            sender: "user"
+          };
         
           const newMessages = [...messages, newMessage];
           setMessages(newMessages);
           
           setIsTyping(true);
-          await processWorkoutPlan(newMessages);        
-          try {
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${API_KEY}`,
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify(apiRequestBody)
-            });
+          await processWorkoutPlan(newMessages);
         
-            const data = await response.json();
-        
-            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-              let rawResponse = data.choices[0].message.content;
-              const formattedResponse = formatResponse(rawResponse);
-                setMessages(prevMessages => [
-                  ...prevMessages,
-                  {
-                    message: formattedResponse,
-                    sender: "Hercules",
-                    direction: "incoming",
-                  },
-                ]);
-            }
-          } catch (error) {
-            console.error("Error processing message:", error);
-            setMessages(prevMessages => [
-              ...prevMessages,
-              {
-                message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
-                sender: "Hercules",
-                direction: "incoming",
-              },
-            ]);
-          } finally {
-            setIsTyping(false);
-          }
     } else {
-        let apiMessages = chatMessages.map((messageObject) => {
-            let role = messageObject.sender === "Hercules" ? "assistant" : "user";
-            return { role: role, content: messageObject.message }
-          });
+        const newMessage = {
+            message,
+            direction: 'outgoing',
+            sender: "user"
+          };
         
-          const apiRequestBody = {
-            "model": "gpt-4o-mini", 
-            "messages": [
-              systemMessageMealNotGenerated,
-              ...apiMessages 
-            ]
-          }
+          const newMessages = [...messages, newMessage];
+          setMessages(newMessages);
+          
+          setIsTyping(true);
+          await processRemedy(newMessages);
         
-          try {
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${API_KEY}`,
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify(apiRequestBody)
-            });
-        
-            const data = await response.json();
-        
-            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-              let rawResponse = data.choices[0].message.content;
-              const formattedResponse = formatResponse(rawResponse);
-                setMessages(prevMessages => [
-                  ...prevMessages,
-                  {
-                    message: formattedResponse,
-                    sender: "Hercules",
-                    direction: "incoming",
-                  },
-                ]);
-            }
-          } catch (error) {
-            console.error("Error processing message:", error);
-            setMessages(prevMessages => [
-              ...prevMessages,
-              {
-                message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
-                sender: "Hercules",
-                direction: "incoming",
-              },
-            ]);
-          } finally {
-            setIsTyping(false);
-            setIsMealGenerated(true);
-          }
     }
-    
-  }
-  
-  
-  async function processMessageToConsult(chatMessages) {
-    let apiMessages = chatMessages.map((messageObject) => {
-      let role = messageObject.sender === "Hercules" ? "assistant" : "user";
-      return { role: role, content: messageObject.message }
-    });
-  
-    const apiRequestBody = {
-      "model": "gpt-4o-mini", 
-      "messages": [
-        systemMessageGeneralConsult,
-        ...apiMessages 
-      ]
-    }
-  
-    try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(apiRequestBody)
-      });
-  
-      const data = await response.json();
-  
-      if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-        let rawResponse = data.choices[0].message.content;
-        const formattedResponse = formatResponse(rawResponse);
-          setMessages(prevMessages => [
-            ...prevMessages,
-            {
-              message: formattedResponse,
-              sender: "Hercules",
-              direction: "incoming",
-            },
-          ]);
-      }
-    } catch (error) {
-      console.error("Error processing message:", error);
-      setMessages(prevMessages => [
-        ...prevMessages,
-        {
-          message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
-          sender: "Hercules",
-          direction: "incoming",
-        },
-      ]);
-    } finally {
-      setIsTyping(false);
-    }
-  }
-  
-async function processWorkoutPlan(chatMessages) {
-    if (workoutGenerated) {
-        let apiMessages = chatMessages.map((messageObject) => {
-            let role = messageObject.sender === "Hercules" ? "assistant" : "user";
-            return { role: role, content: messageObject.message }
-          });
-        
-          const apiRequestBody = {
-            "model": "gpt-4o-mini", 
-            "messages": [
-              systemMessageWorkoutPlanGenerated,
-              ...apiMessages 
-            ]
-          }
-        
-          try {
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${API_KEY}`,
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify(apiRequestBody)
-            });
-        
-            const data = await response.json();
-        
-            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-              let rawResponse = data.choices[0].message.content;
-              const formattedResponse = formatResponse(rawResponse);
-                setMessages(prevMessages => [
-                  ...prevMessages,
-                  {
-                    message: formattedResponse,
-                    sender: "Hercules",
-                    direction: "incoming",
-                  },
-                ]);
-            }
-          } catch (error) {
-            console.error("Error processing message:", error);
-            setMessages(prevMessages => [
-              ...prevMessages,
-              {
-                message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
-                sender: "Hercules",
-                direction: "incoming",
-              },
-            ]);
-          } finally {
-            setIsTyping(false);
-          }
-    } else {
-        let apiMessages = chatMessages.map((messageObject) => {
-            let role = messageObject.sender === "Hercules" ? "assistant" : "user";
-            return { role: role, content: messageObject.message }
-          });
-        
-          const apiRequestBody = {
-            "model": "gpt-4o-mini", 
-            "messages": [
-              systemMessageWorkoutPlanNotGenerated,
-              ...apiMessages 
-            ]
-          }
-        
-          try {
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${API_KEY}`,
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify(apiRequestBody)
-            });
-        
-            const data = await response.json();
-        
-            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-              let rawResponse = data.choices[0].message.content;
-              const formattedResponse = formatResponse(rawResponse);
-                setMessages(prevMessages => [
-                  ...prevMessages,
-                  {
-                    message: formattedResponse,
-                    sender: "Hercules",
-                    direction: "incoming",
-                  },
-                ]);
-            }
-          } catch (error) {
-            console.error("Error processing message:", error);
-            setMessages(prevMessages => [
-              ...prevMessages,
-              {
-                message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
-                sender: "Hercules",
-                direction: "incoming",
-              },
-            ]);
-          } finally {
-            setIsTyping(false);
-            setIsWorkoutGenerated(true);
-          }
-    }
+
   }
 
   async function processMealPlan(chatMessages) {
@@ -950,7 +716,7 @@ async function processWorkoutPlan(chatMessages) {
     }
 
   return (
-    <div className="flex flex-col max-h-[90vh] h-screen ">
+    <div className="flex flex-col h-screen">
         <div className="flex-grow p-4 md:p-8 bg-gray-100 overflow-y-auto"> {/* Chat area - full height with scroll */}
             {messages.map((message, i) => (
                 <div key={i} className={`flex ${message.direction === 'incoming' ? 'justify-start' : 'justify-end'} mb-4`}>
@@ -958,31 +724,30 @@ async function processWorkoutPlan(chatMessages) {
                       <div dangerouslySetInnerHTML={{__html: message.message }} />
                     </div>
                 </div>
-            ))}``
+            ))}
             {isTyping && (
                 <div className="flex justify-start mb-4">
-                    <div className="p-2 md:p-3 rounded-lg bg-blue-500 max-w-xs md:max-w-md lg:max-w-lg">
+                    <div className="text-white p-2 md:p-3 rounded-lg bg-blue-500 max-w-xs md:max-w-md lg:max-w-lg">
                         Hercules is typing...
                     </div>
                 </div>
             )}
-            {/* {imageIsLoading && (
-                <div className="flex justify-start mb-4">
-                    <div className="p-2 md:p-3 rounded-lg bg-blue-500 max-w-xs md:max-w-md lg:max-w-lg">
-                        Generating image...
-                    </div>
-                </div>
-            )} */}
         </div>
         <div className="py-4">
-            <button className="rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
-                MyMeals
+            <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(true); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+                MyMealsChat
+            </button>
+            <button onClick={() => {setIsWorkoutPlan(true); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+                MyWorkoutChat
+            </button>
+            <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(true);}} className="mx-4 rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+                Remedy
             </button>
         </div>
-        <div className="p-4 md:p-6 border-t border-gray-200"> {/* Input area - sticks to bottom */}
+        <div className="mx-4 p-4 md:p-6 bg-white border-t border-gray-200"> {/* Input area - sticks to bottom */}
             <input 
                 type="text"
-                placeholder="What do you require from the gods"
+                placeholder="Type your basketball query here"
                 className="w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
