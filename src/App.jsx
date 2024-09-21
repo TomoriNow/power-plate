@@ -84,16 +84,28 @@ function App() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-400 to-blue-600 flex flex-col justify-center items-center p-4">
-        <div className="w-full max-w-md">
-          <h1 className="text-4xl font-bold text-white text-center mb-8">Power Plate</h1>
-          <div className="bg-white rounded-lg shadow-xl p-8">
+      <div className="flex h-screen">
+        {/* Left side */}
+        <div className="w-1/2 bg-gray-800 flex items-center justify-center">
+    <div className="text-center">
+      <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500 mb-4 font-roboto">
+        We are PowerPlate
+      </h2>
+      <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500 font-roboto">
+        Your Personal Health Consultant
+      </h1>
+    </div>
+  </div>
+  
+        {/* Right side */}
+        <div className="w-1/2 bg-black flex items-center justify-center">
+          <div className="w-3/4 max-w-md">
             <CustomAuth supabase={supabase} />
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
   
   return (
     <Router>
