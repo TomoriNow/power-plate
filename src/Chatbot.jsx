@@ -1142,6 +1142,20 @@ function Chatbot() {
           <img src="src/assets/Fix-s.png" className="mr-3 size-5" />
           <h5>Remedy</h5>
         </button>
+        <button
+          onClick={() => {
+            setActiveButton('consultation');
+            setIsWorkoutPlan(false);
+            setIsMealPlan(false);
+            setIsConsultation(true);
+            setIsRemedy(false);
+          }}
+          className={buttonClasses(activeButton === 'consultation')}
+        >
+          <img src="src/assets/Chat-s.png" className="mr-3 size-5" />
+          <h5>General Consultation</h5>
+        </button>
+
       </div>
       <div className="mx-4 p-4"> {/* Input area - sticks to bottom */}
         <input
