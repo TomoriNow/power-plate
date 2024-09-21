@@ -422,6 +422,30 @@ function Chatbot() {
         if (data.choices && data.choices.length > 0 && data.choices[0].message) {
           let rawResponse = data.choices[0].message.content;
           const formattedResponse = formatResponse(rawResponse);
+          
+          // Parse the workout plan
+          const mealPlan = parseMealPlan(rawResponse);
+          console.log('Parsed meal plan:', mealPlan);
+          
+          if (mealPlan.length > 0) {
+            // Get the current user's ID
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (error) throw error;
+            if (user && user.id) {
+              try {
+                await insertMealPlan(mealPlan, user.id);
+                console.log('Meal plan processed and saved successfully');
+              } catch (insertError) {
+                console.error('Failed to insert meal plan:', insertError);
+                // You might want to add a user-friendly error message here
+              }
+            } else {
+              console.warn('No user found. Meal plan not saved to database.');
+            }
+          } else {
+            console.warn('No valid meal plan found in the response.');
+          }
+          
           setMessages(prevMessages => [
             ...prevMessages,
             {
@@ -513,7 +537,7 @@ function Chatbot() {
     // Find the position of "DAY 1" and start parsing from there
     const startIndex = response.indexOf('DAY 1');
     if (startIndex === -1) {
-      console.error('No valid meal days found');
+      console.error('No valid meal plan days found');
       return [];
     }
   
@@ -521,40 +545,67 @@ function Chatbot() {
     const mealPlan = response.slice(startIndex);
   
     // Split the meal plan by 'DAY' and filter out any empty days
-    const days = mealPlan.split('DAY').filter(day => day);
+    const days = mealPlan.split('DAY').filter(day => day.trim());
   
-    // Initialize an empty object to hold parsed days
-    const parsedDays = {};
-    
+    // Initialize an empty array to hold parsed days
+    const parsedDays = [];
+  
     // Parse each day from the meal plan
     days.forEach(day => {
-      const lines = day.split('\n').filter(line => line);
+      const lines = day.split('\n').filter(line => line.trim());
   
       if (lines.length < 2) {
         // Skip invalid entries with insufficient data
         return;
       }
   
-      // Extract day number and details
-      const dayNum = lines[0].replace(':', '').trim();
-      let type = lines[1].toUpperCase().startsWith('REST-DAY') ? 'REST-DAY' : 'WORKOUT';
-      let meal = lines.slice(2).join(' ').trim();
+      // Extract day number
+      const dayNum = lines[0].split(':')[0].trim();
   
-      // If the workout description is blank, set the type to REST-DAY
-      if (!workout) {
-        type = 'REST-DAY';
-        workout = ''; // Ensure workout is blank for REST-DAY
-      }
-  
-      // Add the parsed day to the parsedDays object
-      parsedDays[dayNum] = {
-        day: dayNum,
-        type: type,
-        workout: workout
+      // Initialize meals object
+      const meals = {
+        BREAKFAST: '',
+        LUNCH: '',
+        DINNER: ''
       };
-    });
   
-    return parsedDays;
+      // Parse meals
+      lines.slice(1).forEach(line => {
+        const [mealType, ...mealDescription] = line.split(':');
+        if (meals.hasOwnProperty(mealType.trim().toUpperCase())) {
+          meals[mealType.trim().toUpperCase()] = mealDescription.join(':').trim();
+        }
+      });
+  
+      // Add the parsed day to the parsedDays array
+      parsedDays.push({
+        day: dayNum,
+        meals: meals
+      });
+    });
+    
+    console.log(parsedDays);
+  
+    // Ensure we have exactly 7 days (1 to 7)
+    const completePlan = [];
+    for (let i = 1; i <= 7; i++) {
+      const existingDay = parsedDays.find(day => day.day === i.toString());
+      if (existingDay) {
+        completePlan.push(existingDay);
+      } else {
+        // If the day is missing, add a default empty day
+        completePlan.push({
+          day: i.toString(),
+          meals: {
+            BREAKFAST: '',
+            LUNCH: '',
+            DINNER: ''
+          }
+        });
+      }
+    }
+    
+    return completePlan;
   }
   
   function parseWorkoutPlan(response) {
@@ -622,11 +673,60 @@ function Chatbot() {
         });
       }
     }
-  
+    
     return completePlan;
   }
   
+  async function insertMealPlan(mealPlan, userId) {
+    if (!userId) {
+      console.error('No user ID provided. Cannot insert meal plan.');
+      return;
+    }
   
+    try {
+      // First, check if the user exists in the users table
+      let { data: user, error: userError } = await supabase
+        .from('users')
+        .select('user_id')
+        .eq('user_id', userId)
+        .single();
+  
+      if (userError) {
+        if (userError.code === 'PGRST116') {
+          console.log(`User with id ${userId} not found in the users table. Attempting to create...`);
+          // User doesn't exist, so let's create them
+          const { data: newUser, error: createError } = await supabase
+            .from('users')
+            .insert({ user_id: userId })
+            .single();
+  
+          if (createError) throw createError;
+          user = newUser;
+        } else {
+          throw userError;
+        }
+      }
+      
+      for (const day of mealPlan) {
+        const {data, error} = await supabase
+          .from('meal_plans')
+          .upsert({
+            user_id: userId,
+            day: day.day,
+            meal_plan: day.meal_plan
+            //explanation: day.explanation // Include Explanation if needed
+          }, {
+            onConflict: 'user_id,day'
+          });
+          
+          if (error) throw error;
+      }
+      console.log('Meal plan inserted successfully');
+    } catch (error) {
+      console.error('Error inserting meal plan:', error);
+      throw error; // Re-throw the error so it can be caught and handled by the caller
+    }
+}
   
   async function insertWorkoutPlan(workoutPlan, userId) {
     if (!userId) {
