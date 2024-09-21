@@ -44,7 +44,7 @@ export async function fetchMealPlanData() {
   try {
     const { data, error } = await supabase
       .from('meal_plans')
-      .select('meal')
+      .select('meal_plan')
       .eq('user_id', user.id)
       .order('day', { ascending: true });
 
@@ -228,37 +228,19 @@ const systemMessageRemedy = {
     HERE IS THE CURRENT MEAL PLAN OF THE USER:
     ${getMealPlanUser.meal_plan} 
 
-    GENERATE A NEW MEAL PLAN SUCH THAT IT STILLS IN LINE WITH THE USER GOALS. 
+    generate a new meal plan that stays in line with USER GOALS. Make sure that you make a FULL MEAL PLAN FOR 7 DAYS 
+    
     strictly follow this format:
-    DAY 1: 
+    DAY N: 
     BREAKFAST: <Meal>
     LUNCH:  <Meal>
     DINNER: <Meal>
-    DAY 2: 
-    BREAKFAST: <Meal>
-    LUNCH: <Meal>
-    DINNER: <Meal>
-    DAY 3: 
-    BREAKFAST: <Meal>
-    LUNCH: <Meal>
-    DINNER: <Meal>
-    DAY 4: 
+    DAY N+1: 
     BREAKFAST: <Meal>
     LUNCH:  <Meal>
     DINNER: <Meal>
-    DAY 5: 
-    BREAKFAST: <Meal>
-    LUNCH: <Meal>
-    DINNER: <Meal>
-    DAY 6: 
-    BREAKFAST: <Meal>
-    LUNCH: <Meal>
-    DINNER: <Meal>
-    DAY 7: 
-    BREAKFAST: <Meal>
-    LUNCH: <Meal>
-    DINNER: <Meal>
-
+    
+    Where N is a positive integer where you want to start the meal plan remedy.
     NOTE: Fill in the <Meal> field with the generated meal
     
     Do not write anything before typing DAY 1 
@@ -583,7 +565,7 @@ function Chatbot() {
     }
 
     // Find the position of "DAY 1" and start parsing from there
-    const startIndex = response.indexOf('DAY 1');
+    const startIndex = response.indexOf('DAY');
     if (startIndex === -1) {
       console.error('No valid meal plan days found');
       return [];
@@ -1055,6 +1037,7 @@ function Chatbot() {
             if (user && user.id) {
               try {
                 await insertMealPlan(mealPlan, user.id);
+                console.log(getMealPlanUser.meal_plan);
                 console.log('Meal plan processed and saved successfully');
               } catch (insertError) {
                 console.error('Failed to insert meal plan:', insertError);
