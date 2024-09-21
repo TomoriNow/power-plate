@@ -620,7 +620,7 @@ function Chatbot() {
         // If the day is missing, add a default empty day
         completePlan.push({
           day: i.toString(),
-          meals: {
+          meal_plan: {
             BREAKFAST: '',
             LUNCH: '',
             DINNER: ''
@@ -732,6 +732,7 @@ function Chatbot() {
       }
       
       for (const day of mealPlan) {
+        
         const {data, error} = await supabase
           .from('meal_plans')
           .upsert({
@@ -1076,7 +1077,7 @@ async function processWorkoutPlan(chatMessages) {
         <div className="mx-4 p-4 md:p-6 bg-white border-t border-gray-200"> {/* Input area - sticks to bottom */}
             <input 
                 type="text"
-                placeholder="Type your basketball query here"
+                placeholder="Type your fitness query here"
                 className="w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
