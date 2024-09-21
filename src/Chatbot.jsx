@@ -7,8 +7,16 @@ import { ThemeSupa } from '@supabase/auth-ui-shared'
 
 const API_KEY = "";
 const systemMessage = {
-  "role": "system", "content": "Explain things like you're talking to a sports professional with decades of experience in academia, specializing in basketball and the NBA. Whenever possible, list your answers in bullet points for clarity."
-}
+    "role": "system",
+    "content": `
+      You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals. Provide an IN-DEPTH and INFORMATIVE general consultation about health and fitness, or any general diagnoses for the user. Please provide real-world references to your explanations whenever possible, and try to be ENCOURAGING and MOTIVATING to the user.
+  
+      KEEP IN MIND THE CONTEXT OF THE USER:
+      The GOALS of the user are to: [USER_GOALS].
+      They have these ALLERGY(S): [USER_ALLERGIES].
+      They have these INJURY and PHYSICAL CONSTRAINT(S): [USER_INJURIES].
+    `
+  }
 
 function formatResponse(text) {
   // Replace ### headers with <h3> tags
@@ -43,9 +51,9 @@ function Chatbot() {
   //const [session, setSession] = useState(null)
   const [messages, setMessages] = useState([
     {
-      message: "Hello, I'm HooperGPT! Ask me anything!",
+      message: "Hello, I'm Hercules! Ask me anything!",
       sentTime: "just now",
-      sender: "HooperGPT",
+      sender: "Hercules",
       direction: "incoming"
     }
   ]);
@@ -69,7 +77,7 @@ function Chatbot() {
   
   async function processMessageToPlateGPT(chatMessages) {
     let apiMessages = chatMessages.map((messageObject) => {
-      let role = messageObject.sender === "HooperGPT" ? "assistant" : "user";
+      let role = messageObject.sender === "Hercules" ? "assistant" : "user";
       return { role: role, content: messageObject.message }
     });
   
@@ -100,7 +108,7 @@ function Chatbot() {
             ...prevMessages,
             {
               message: formattedResponse,
-              sender: "HooperGPT",
+              sender: "Hercules",
               direction: "incoming",
             },
           ]);
@@ -111,7 +119,7 @@ function Chatbot() {
         ...prevMessages,
         {
           message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
-          sender: "HooperGPT",
+          sender: "Hercules",
           direction: "incoming",
         },
       ]);
