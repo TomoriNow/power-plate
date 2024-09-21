@@ -29,7 +29,7 @@ const [userWorkoutPreferences, setUserWorkoutPreferences] = useState('');
 const [userAllergies, setUserAllergies] = useState('');
 
 
-  useEffect(() => {
+useEffect(() => {
     const fetchUserData = async () => {
       let userId = users.map((user) => {
         userId = user.user_id
@@ -62,9 +62,11 @@ export const systemMessageGeneralConsult = {
         You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals. Provide an IN-DEPTH and INFORMATIVE general consultation about health and fitness, or any general diagnoses for the user. Please provide real-world references to your explanations whenever possible, and try to be ENCOURAGING and MOTIVATING to the user.
     
         KEEP IN MIND THE CONTEXT OF THE USER:
-        The GOALS of the user are to: ${userGoals}.
+        The WORKOUT PREFERENCE of the user are to: ${userWorkoutPreferences}.
+        The User is ${userAge} years old, ${userGender}, and is located in ${userLocation}.
         They have these ALLERGY(S): ${userAllergies}.
         They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
+        The BMI of the user is ${userBmi}.
       `
   }
   
@@ -99,10 +101,12 @@ export const systemMessageWorkoutPlanNotGenerated = {
           
        Do not write anything before typing DAY 1 
        
-       KEEP IN MIND THE CONTEXT OF THE USER: 
-       The GOALS of the user is to ${userGoals}.
-       They have these ALLERGY(S): ${userAllergies}. 
-       They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
+        KEEP IN MIND THE CONTEXT OF THE USER:
+        The WORKOUT PREFERENCE of the user are to: ${userWorkoutPreferences}.
+        The User is ${userAge} years old, ${userGender}, and is located in ${userLocation}.
+        They have these ALLERGY(S): ${userAllergies}.
+        They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
+        The BMI of the user is ${userBmi}.
       `
   }
   
@@ -116,10 +120,12 @@ export const systemMessageWorkoutPlanGenerated = {
           THIS IS THEIR CURRENT DAY OF THE WORKOUT PLAN: 
           XXXXXXXXXX
   
-          KEEP IN MIND THE CONTEXT OF THE USER: 
-          The GOALS of the user is to ${userGoals}.
-          They have these ALLERGY(S):  ${userAllergies} . 
-          They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
+        KEEP IN MIND THE CONTEXT OF THE USER:
+        The WORKOUT PREFERENCE of the user are to: ${userWorkoutPreferences}.
+        The User is ${userAge} years old, ${userGender}, and is located in ${userLocation}.
+        They have these ALLERGY(S): ${userAllergies}.
+        They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
+        The BMI of the user is ${userBmi}.
       `
   }
   
@@ -166,10 +172,12 @@ export const systemMessageMealNotGenerated = {
         
         Do not write anything before typing DAY 1
         
-        KEEP IN MIND THE CONTEXT OF THE USER: 
-        The GOALS of the user is to ${userGoals}.
-        They have these ALLERGY(S):  ${userAllergies}. 
-        They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
+      KEEP IN MIND THE CONTEXT OF THE USER:
+      The WORKOUT PREFERENCE of the user are to: ${userWorkoutPreferences}.
+      The User is ${userAge} years old, ${userGender}, and is located in ${userLocation}.
+      They have these ALLERGY(S): ${userAllergies}.
+      They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
+      The BMI of the user is ${userBmi}.
       `
   }
   
@@ -183,10 +191,12 @@ export const systemMessageMealGenerated = {
       THIS IS THEIR CURRENT DAY OF THE MEAL PLAN: 
       XXXXXXXXXX
   
-      KEEP IN MIND THE CONTEXT OF THE USER: 
-      The GOALS of the user is to ${userGoals}.
-      They have these ALLERGY(S):  ${userAllergies}. 
-      They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
+    KEEP IN MIND THE CONTEXT OF THE USER:
+    The WORKOUT PREFERENCE of the user are to: ${userWorkoutPreferences}.
+    The User is ${userAge} years old, ${userGender}, and is located in ${userLocation}.
+    They have these ALLERGY(S): ${userAllergies}.
+    They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
+    The BMI of the user is ${userBmi}.
   
     `
   }
@@ -196,10 +206,12 @@ export const systemMessageRemedy = {
       "content":`
       You are Hercules. Like the Roman God, you are a symbol of strength, well-being, motivation, and encouragement. In this context, you are also an expert of health and fitness and are trying to help the user with their fitness goals.
   
-      KEEP IN MIND THE CONTEXT OF THE USER: 
-      The GOALS of the user is to ${userGoals}.
-      They have these ALLERGY(S):  ${userAllergies}. 
+      KEEP IN MIND THE CONTEXT OF THE USER:
+      The WORKOUT PREFERENCE of the user are to: ${userWorkoutPreferences}.
+      The User is ${userAge} years old, ${userGender}, and is located in ${userLocation}.
+      They have these ALLERGY(S): ${userAllergies}.
       They have these INJURY and PHYSICAL CONSTRAINT(S): ${userInjuries}.
+      The BMI of the user is ${userBmi}.
   
       HERE IS THE CURRENT MEAL PLAN OF THE USER: 
   
