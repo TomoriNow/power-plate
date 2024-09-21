@@ -1021,7 +1021,7 @@ async function processWorkoutPlan(chatMessages) {
 
   return (
     <div className="flex flex-col h-screen flex-grow ml-64 p-8">
-        <div className="flex-grow p-4 md:p-8 bg-gray-100 overflow-y-auto"> {/* Chat area - full height with scroll */}
+        <div className="flex-grow p-4 md:p-8 overflow-y-auto"> {/* Chat area - full height with scroll */}
             {messages.map((message, i) => (
                 <div key={i} className={`flex ${message.direction === 'incoming' ? 'justify-start' : 'justify-end'} mb-4`}>
                     <div className={`p-2 md:p-3 rounded-lg text-left ${message.direction === 'incoming' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-800'} max-w-xs md:max-w-md lg:max-w-lg`}>
@@ -1037,7 +1037,7 @@ async function processWorkoutPlan(chatMessages) {
                 </div>
             )}
         </div>
-        <div className="py-4">
+        <div className="p-4 md:p-6">
             <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(true); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-purple-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
                 MyMealsChat
             </button>
@@ -1048,11 +1048,11 @@ async function processWorkoutPlan(chatMessages) {
                 Remedy
             </button>
         </div>
-        <div className="mx-4 p-4 md:p-6 bg-white border-t border-gray-200"> {/* Input area - sticks to bottom */}
+        <div className="mx-4 p-4 md:p-6"> {/* Input area - sticks to bottom */}
             <input 
                 type="text"
                 placeholder="Type your basketball query here"
-                className="w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+                className="w-full p-2 md:p-3 rounded-lg bg-[#333333] focus:outline-none focus:border-purple-500 text-[#AAAAAA]"
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                         handleSend(e.target.value);
