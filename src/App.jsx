@@ -109,9 +109,9 @@ function App() {
   
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-100 flex">
         {isProfileComplete && <Navbar onLogout={handleLogout} username={username} />}
-        <main className="container mx-auto px-4 py-8">
+        <main className="flex-grow ml-64 p-8"> {/* Added ml-64 to account for navbar width */}
           <Routes>
             <Route 
               path="/" 
