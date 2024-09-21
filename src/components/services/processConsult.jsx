@@ -36,7 +36,7 @@ function formatResponse(text) {
     return formattedParagraphs.join('');
   }
   //Process General Consultation
-  async function processMessageToConsult(chatMessages, ) {
+  async function processMessageToConsult(chatMessages, setMessages, setIsTyping) {
     let apiMessages = chatMessages.map((messageObject) => {
       let role = messageObject.sender === "Hercules" ? "assistant" : "user";
       return { role: role, content: messageObject.message }
