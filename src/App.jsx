@@ -9,8 +9,12 @@ import Chatbot from './Chatbot'
 const ANON_KEY = import.meta.env.VITE_ANON_API_KEY;
 const supabase = createClient('https://lufswepdkuvvgsrmqist.supabase.co', ANON_KEY)
 
-function ProtectedRoute({ children, isProfileComplete }) {
+function ProtectedRoute({ children, isProfileComplete, isLoading }) {
   const location = useLocation();
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Or a loading spinner
+  }
   
   if (!isProfileComplete) {
     return <Navigate to="/survey" state={{ from: location }} replace />;
@@ -23,12 +27,15 @@ function App() {
   const [session, setSession] = useState(null)
   const [username, setUsername] = useState('')
   const [isProfileComplete, setIsProfileComplete] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       if (session) {
         fetchUserData(session.user.id)
+      } else {
+        setIsLoading(false)
       }
     })
 
@@ -38,6 +45,8 @@ function App() {
       setSession(session)
       if (session) {
         fetchUserData(session.user.id)
+      } else {
+        setIsLoading(false)
       }
     })
 
@@ -59,6 +68,7 @@ function App() {
         data.weight && data.height && data.age && data.gender && data.location && data.workout_preferences && data.allergies
       )
     }
+    setIsLoading(false)
   }
 
   const handleProfileComplete = () => {
@@ -94,7 +104,7 @@ function App() {
             <Route 
               path="/" 
               element={
-                <ProtectedRoute isProfileComplete={isProfileComplete}>
+                <ProtectedRoute isProfileComplete={isProfileComplete} isLoading={isLoading}>
                   <div>Welcome to PowerPlate!</div>
                 </ProtectedRoute>
               } 
@@ -116,7 +126,7 @@ function App() {
             <Route 
               path="/chat" 
               element={
-                <ProtectedRoute isProfileComplete={isProfileComplete}>
+                <ProtectedRoute isProfileComplete={isProfileComplete} isLoading={isLoading}>
                   <Chatbot />
                 </ProtectedRoute>
               } 
