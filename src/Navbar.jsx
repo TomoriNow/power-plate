@@ -12,6 +12,7 @@ const Navbar = ({ onLogout, username }) => {
         <Link to="/workouts" className="text-white hover:text-purple-500 px-3 py-2 rounded mb-2">My Workouts</Link>
         <Link to="/meals" className="text-white hover:text-purple-500 px-3 py-2 rounded mb-2">My Meals</Link>
         <Link to="/chat" className="text-white hover:text-purple-500 px-3 py-2 rounded mb-2">Chat With Hercules</Link>
+        <Link to="/" className="text-white hover:text-purple-500 px-3 py-2 rounded mb-2">Home</Link>
         <button onClick={onLogout} className="bg-red-500 hover:bg-red-600 px-3 py-2 rounded mt-4">Logout</button>
       </div>
     </nav>
