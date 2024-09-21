@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 function Card() {
     return (
         <div class="flex flex-row justify-center space-x-4 h-36 text-[#C87FEB]">
-            <Link class="relative basis-1/3 pl-3.5 pt-3.5 bg-white rounded-lg shadow dark:bg-[#333333]" to="/meal">
+            <Link class="relative basis-1/3 pl-3.5 pt-3.5 bg-white rounded-lg shadow dark:bg-[#333333]" to="/meals">
                 <div>
                     <h5 class="mb-2 text-base font-bold tracking-tight">MyMeals</h5>
                     <img class="absolute right-0 bottom-0 size-24" src="src/assets/Food restaurant.png" />
