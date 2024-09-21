@@ -5,17 +5,22 @@ import Navbar from './Navbar'
 import CustomAuth from './CustomAuth'
 import Survey from './Survey'
 import Chatbot from './Chatbot'
+import Landing from './Landing'
 
 const ANON_KEY = import.meta.env.VITE_ANON_API_KEY;
 const supabase = createClient('https://lufswepdkuvvgsrmqist.supabase.co', ANON_KEY)
 
-function ProtectedRoute({ children, isProfileComplete }) {
+function ProtectedRoute({ children, isProfileComplete, isLoading }) {
   const location = useLocation();
-  
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Or a loading spinner
+  }
+
   if (!isProfileComplete) {
     return <Navigate to="/survey" state={{ from: location }} replace />;
   }
-  
+
   return children;
 }
 
@@ -23,12 +28,15 @@ function App() {
   const [session, setSession] = useState(null)
   const [username, setUsername] = useState('')
   const [isProfileComplete, setIsProfileComplete] = useState(false)
-  
+  const [isLoading, setIsLoading] = useState(true)
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       if (session) {
         fetchUserData(session.user.id)
+      } else {
+        setIsLoading(false)
       }
     })
 
@@ -38,12 +46,14 @@ function App() {
       setSession(session)
       if (session) {
         fetchUserData(session.user.id)
+      } else {
+        setIsLoading(false)
       }
     })
 
     return () => subscription.unsubscribe()
   }, [])
-  
+
   const fetchUserData = async (userId) => {
     const { data, error } = await supabase
       .from('users')
@@ -59,6 +69,7 @@ function App() {
         data.weight && data.height && data.age && data.gender && data.location && data.workout_preferences && data.allergies
       )
     }
+    setIsLoading(false)
   }
 
   const handleProfileComplete = () => {
@@ -74,56 +85,67 @@ function App() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-400 to-blue-600 flex flex-col justify-center items-center p-4">
-        <div className="w-full max-w-md">
-          <h1 className="text-4xl font-bold text-white text-center mb-8">Power Plate</h1>
-          <div className="bg-white rounded-lg shadow-xl p-8">
+      <div className="flex h-screen">
+        {/* Left side */}
+        <div className="w-1/2 bg-zinc-900 flex items-center justify-center">
+          <div className="text-center justify-center">
+            <img src="src/assets/PowerPlate-logo.png" className='flex size-32 mx-auto mb-8' />
+            <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#C87FEB] to-cyan-300 mb-4 font-roboto">
+              We are PowerPlate
+            </h2>
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#C87FEB] to-cyan-300 font-roboto">
+              Your Personal Health Consultant
+            </h1>
+          </div>
+        </div>
+
+        {/* Right side */}
+        <div className="w-1/2 bg-black flex items-center justify-center">
+          <div className="w-3/4 max-w-md">
             <CustomAuth supabase={supabase} />
           </div>
         </div>
       </div>
-    )
-  }
-  
+    );
+  };
+
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
-        {isProfileComplete && <Navbar onLogout={handleLogout} username={username} />}
-        <main className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-[#222222] flex items-center justify-center">
           <Routes>
-            <Route 
-              path="/" 
+            <Route
+              path="/"
               element={
-                <ProtectedRoute isProfileComplete={isProfileComplete}>
-                  <div>Welcome to PowerPlate!</div>
+                <ProtectedRoute isProfileComplete={isProfileComplete} isLoading={isLoading}>
+                  <Landing />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/survey" 
+            <Route
+              path="/survey"
               element={
                 isProfileComplete ? (
                   <Navigate to="/" replace />
                 ) : (
-                  <Survey 
-                    supabase={supabase} 
-                    userId={session.user.id} 
+                  <Survey
+                    supabase={supabase}
+                    userId={session.user.id}
                     onProfileComplete={handleProfileComplete}
                   />
                 )
-              } 
+              }
             />
-            <Route 
-              path="/chat" 
+            <Route
+              path="/chat"
               element={
-                <ProtectedRoute isProfileComplete={isProfileComplete}>
+                <ProtectedRoute isProfileComplete={isProfileComplete} isLoading={isLoading}>
                   <Chatbot />
+                  <Navbar onLogout={handleLogout} username={username} />
                 </ProtectedRoute>
-              } 
+              }
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </main>
       </div>
     </Router>
   )
