@@ -10,40 +10,51 @@ const CustomAuth = ({ supabase }) => {
   const handleSignUp = async (e) => {
     e.preventDefault();
     setError(null);
-
+  
     // Check if username already exists
     const { data: existingUser, error: checkError } = await supabase
       .from('users')
       .select('username')
       .eq('username', username)
       .maybeSingle();
-
+  
     if (checkError) {
       setError('Error checking username');
       return;
     }
-
+  
     if (existingUser) {
       setError('Username already exists');
       return;
     }
-
-    const { data, error } = await supabase.auth.signUp({
+  
+    // Sign up without email confirmation
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: null, // Skip email confirmation
+      },
     });
-
-    if (error) {
-      setError(error.message);
-    } else if (data.user) {
-      // Insert the username into the users table
+  
+    if (signUpError) {
+      setError(signUpError.message);
+      return;
+    }
+  
+    if (data.user) {
+      // Insert the username into the public.users table
       const { error: insertError } = await supabase
         .from('users')
         .insert({ user_id: data.user.id, username });
-
+  
       if (insertError) {
         setError('Error creating user profile');
+        return;
       }
+  
+      // No need to sign in again since user is automatically signed in
+      // You can redirect or update your app state here
     }
   };
 
