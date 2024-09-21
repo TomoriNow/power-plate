@@ -1,32 +1,34 @@
-
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { Auth } from '@supabase/auth-ui-react'
-import { ThemeSupa } from '@supabase/auth-ui-shared'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom'
 import Navbar from './Navbar'
 import CustomAuth from './CustomAuth'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import Survey from './Survey'
 import Chatbot from './Chatbot'
 
-
 const ANON_KEY = import.meta.env.VITE_ANON_API_KEY;
-console.log('ANON_KEY:', ANON_KEY);
 const supabase = createClient('https://lufswepdkuvvgsrmqist.supabase.co', ANON_KEY)
-console.log('Supabase client:', supabase);
-const API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+
+function ProtectedRoute({ children, isProfileComplete }) {
+  const location = useLocation();
+  
+  if (!isProfileComplete) {
+    return <Navigate to="/survey" state={{ from: location }} replace />;
+  }
+  
+  return children;
+}
 
 function App() {
-  const [count, setCount] = useState(0)
   const [session, setSession] = useState(null)
   const [username, setUsername] = useState('')
+  const [isProfileComplete, setIsProfileComplete] = useState(false)
   
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       if (session) {
-        fetchUsername(session.user.id)
+        fetchUserData(session.user.id)
       }
     })
 
@@ -35,32 +37,39 @@ function App() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       if (session) {
-        fetchUsername(session.user.id)
+        fetchUserData(session.user.id)
       }
     })
 
     return () => subscription.unsubscribe()
   }, [])
   
-  const fetchUsername = async (userId) => {
+  const fetchUserData = async (userId) => {
     const { data, error } = await supabase
       .from('users')
-      .select('username')
+      .select('username, weight, height, age, gender, location, workout_preferences, allergies')
       .eq('user_id', userId)
       .single()
-    console.log('Data: ', data)
 
     if (error) {
-      console.error('Error fetching username:', error)
+      console.error('Error fetching user data:', error)
     } else if (data) {
       setUsername(data.username)
+      setIsProfileComplete(
+        data.weight && data.height && data.age && data.gender && data.location && data.workout_preferences && data.allergies
+      )
     }
+  }
+
+  const handleProfileComplete = () => {
+    setIsProfileComplete(true);
   }
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setSession(null)
     setUsername('')
+    setIsProfileComplete(false)
   }
 
   if (!session) {
@@ -75,23 +84,49 @@ function App() {
       </div>
     )
   }
-  else {
-    return (
-      <Router>
-        <div className="min-h-screen bg-gray-100">
-          <Navbar onLogout={handleLogout} username={username} />
-          <main className="container mx-auto px-4 py-8">
-            <Routes>
-              {/* Your routes here */}
-              <Switch>
-                <Link exact match="/chat"><Chatbot /></Link>
-              </Switch>
-            </Routes>
-          </main>
-        </div>
-      </Router>
-    )
-  }
+
+  return (
+    <Router>
+      <div className="min-h-screen bg-gray-100">
+        {isProfileComplete && <Navbar onLogout={handleLogout} username={username} />}
+        <main className="container mx-auto px-4 py-8">
+          <Routes>
+            <Route 
+              path="/" 
+              element={
+                <ProtectedRoute isProfileComplete={isProfileComplete}>
+                  <div>Welcome to PowerPlate!</div>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/survey" 
+              element={
+                isProfileComplete ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <Survey 
+                    supabase={supabase} 
+                    userId={session.user.id} 
+                    onProfileComplete={handleProfileComplete}
+                  />
+                )
+              } 
+            />
+            <Route 
+              path="/chat" 
+              element={
+                <ProtectedRoute isProfileComplete={isProfileComplete}>
+                  <Chatbot />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
+  )
 }
 
 export default App
