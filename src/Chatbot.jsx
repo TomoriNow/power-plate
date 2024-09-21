@@ -1160,7 +1160,7 @@ function Chatbot() {
       <div className="mx-4 p-4"> {/* Input area - sticks to bottom */}
         <input
           type="text"
-          placeholder="Type your basketball query here"
+          placeholder="Type your query here"
           className="w-full p-2 md:p-3 rounded-lg bg-[#333333] focus:outline-none focus:border-purple-500 text-[#AAAAAA]"
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
