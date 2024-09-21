@@ -5,6 +5,7 @@ import Navbar from './Navbar'
 import CustomAuth from './CustomAuth'
 import Survey from './Survey'
 import Chatbot from './Chatbot'
+import Landing from './Landing'
 
 const ANON_KEY = import.meta.env.VITE_ANON_API_KEY;
 const supabase = createClient('https://lufswepdkuvvgsrmqist.supabase.co', ANON_KEY)
@@ -110,15 +111,13 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100 flex">
-        {isProfileComplete && <Navbar onLogout={handleLogout} username={username} />}
-        <main className="flex-grow ml-64 p-8"> {/* Added ml-64 to account for navbar width */}
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
           <Routes>
             <Route
               path="/"
               element={
                 <ProtectedRoute isProfileComplete={isProfileComplete} isLoading={isLoading}>
-                  <div>Welcome to PowerPlate!</div>
+                  <Landing />
                 </ProtectedRoute>
               }
             />
@@ -141,12 +140,12 @@ function App() {
               element={
                 <ProtectedRoute isProfileComplete={isProfileComplete} isLoading={isLoading}>
                   <Chatbot />
+                  <Navbar onLogout={handleLogout} username={username} />
                 </ProtectedRoute>
               }
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </main>
       </div>
     </Router>
   )
