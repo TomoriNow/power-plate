@@ -94,7 +94,7 @@ async function processRemedy(chatMessages, remedyGenerated, setIsRemedyGenerated
         const apiRequestBody = {
             "model": "gpt-4o-mini", 
             "messages": [
-            systemMessageGeneralConsult,
+            systemMessageRemedy,
             ...apiMessages 
             ]
         }
