@@ -6,7 +6,6 @@ import { ThemeSupa } from '@supabase/auth-ui-shared'
 import.meta.env
 
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY
-const API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 const systemMessageGeneralConsult = {
   "role": "system",
   "content": `
@@ -616,24 +615,17 @@ async function processWorkoutPlan(chatMessages) {
                       <div dangerouslySetInnerHTML={{__html: message.message }} />
                     </div>
                 </div>
-            ))}``
+            ))}
             {isTyping && (
                 <div className="flex justify-start mb-4">
-                    <div className="p-2 md:p-3 rounded-lg bg-blue-500 max-w-xs md:max-w-md lg:max-w-lg">
+                    <div className="text-white p-2 md:p-3 rounded-lg bg-blue-500 max-w-xs md:max-w-md lg:max-w-lg">
                         Hercules is typing...
                     </div>
                 </div>
             )}
-            {/* {imageIsLoading && (
-                <div className="flex justify-start mb-4">
-                    <div className="p-2 md:p-3 rounded-lg bg-blue-500 max-w-xs md:max-w-md lg:max-w-lg">
-                        Generating image...
-                    </div>
-                </div>
-            )} */}
         </div>
         <div className="py-4">
-            <button className="mx-4 rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
+            <button onClick={() => {setIsWorkoutPlan(false); setIsMealPlan(true); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
                 MyMealsChat
             </button>
             <button onClick={() => {setIsWorkoutPlan(true); setIsMealPlan(false); setIsConsultation(false); setIsRemedy(false);}} className="mx-4 rounded-lg bg-blue-500 text-white font-bold py-2 px-4 hover:bg-blue-700">
