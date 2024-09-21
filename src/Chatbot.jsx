@@ -34,6 +34,28 @@ export async function fetchUserData() {
   }
 }
 
+export async function fetchMealPlanData() {
+  useEffect(() => {
+    const user = supabase.auth.getUser();
+    if (user) {
+      setUserId(user.id); // Get the current user ID
+    }
+  }, []);
+  try {
+    const { data, error } = await supabase
+      .from('meal_plans')
+      .select('meal_plan')
+      .eq('user_id', user.id)
+      .order('day', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching meal plan data:', error);
+    return null;
+  }
+}
+
 // We'll use an async IIFE to get the current user
 const getCurrentUser = async () => {
   const user = supabase.auth.getUser();
@@ -44,6 +66,16 @@ const getCurrentUser = async () => {
     return null;
   }
 };
+
+const getMealPlanUser = async () => {
+  const user = supabase.auth.getUser();
+  if (user) {
+    const mealPlanData = await fetchMealPlanData();
+    return mealPlanData;
+  } else {
+    return null;
+  }
+}
 
 const systemMessageGeneralConsult = {
   "role": "system",
@@ -193,40 +225,26 @@ const systemMessageRemedy = {
     They have these ALLERGY(S): ${getCurrentUser.userAllergies}.
     The BMI of the user is ${getCurrentUser.userBmi}.
 
-    HERE IS THE CURRENT MEAL PLAN OF THE USER: 
+    HERE IS THE CURRENT MEAL PLAN OF THE USER:
+    ${getMealPlanUser.meal_plan} 
 
-    GENERATE A NEW MEAL PLAN SUCH THAT IT STILLS IN LINE WITH THE USER GOALS. 
-    PLEASE STRICTLY FOLLOW THIS FORMAT: 
-    DAY 1: 
+    generate a new meal plan that stays in line with USER GOALS. Make sure that you make a FULL MEAL PLAN FOR 7 DAYS 
+    
+    strictly follow this format:
+    DAY N: 
     BREAKFAST: <Meal>
     LUNCH:  <Meal>
     DINNER: <Meal>
-    DAY 2: 
-    BREAKFAST: <Meal>
-    LUNCH: <Meal>
-    DINNER: <Meal>
-    DAY 3: 
-    BREAKFAST: <Meal>
-    LUNCH: <Meal>
-    DINNER: <Meal>
-    DAY 4: 
+    DAY N+1: 
     BREAKFAST: <Meal>
     LUNCH:  <Meal>
     DINNER: <Meal>
-    DAY 5: 
-    BREAKFAST: <Meal>
-    LUNCH: <Meal>
-    DINNER: <Meal>
-    DAY 6: 
-    BREAKFAST: <Meal>
-    LUNCH: <Meal>
-    DINNER: <Meal>
-    DAY 7: 
-    BREAKFAST: <Meal>
-    LUNCH: <Meal>
-    DINNER: <Meal>
-
+    
+    Where N is a positive integer where you want to start the meal plan remedy.
     NOTE: Fill in the <Meal> field with the generated meal
+    
+    Do not write anything before typing DAY 1 
+
   `
 };
 
@@ -277,7 +295,9 @@ function Chatbot() {
   const [mealGenerated, setIsMealGenerated] = useState(false);
   const [workoutGenerated, setIsWorkoutGenerated] = useState(false);
   const [remedyGenerated, setIsRemedyGenerated] = useState(false);
+
   const [activeButton, setActiveButton] = useState(null);
+
 
 
 
@@ -321,7 +341,21 @@ function Chatbot() {
       setIsTyping(true);
       await processWorkoutPlan(newMessages);
 
-    } else {
+
+    } else if (remedy) {
+      const newMessage = {
+        message,
+        direction: 'outgoing',
+        sender: "user"
+      };
+
+      const newMessages = [...messages, newMessage];
+      setMessages(newMessages);
+
+      setIsTyping(true);
+      await processRemedy(newMessages);
+    }
+    else {
       const newMessage = {
         message,
         direction: 'outgoing',
@@ -535,7 +569,7 @@ function Chatbot() {
     }
 
     // Find the position of "DAY 1" and start parsing from there
-    const startIndex = response.indexOf('DAY 1');
+    const startIndex = response.indexOf('DAY');
     if (startIndex === -1) {
       console.error('No valid meal plan days found');
       return [];
@@ -599,7 +633,7 @@ function Chatbot() {
           meals: {
             BREAKFAST: '',
             LUNCH: '',
-            DINNER: ''
+            DINNER: '',
           }
         });
       }
@@ -713,7 +747,7 @@ function Chatbot() {
           .upsert({
             user_id: userId,
             day: day.day,
-            meal_plan: day.meal_plan
+            meal_plan: day.meals
             //explanation: day.explanation // Include Explanation if needed
           }, {
             onConflict: 'user_id,day'
@@ -923,7 +957,7 @@ function Chatbot() {
       const apiRequestBody = {
         "model": "gpt-4o-mini",
         "messages": [
-          systemMessageGeneralConsult,
+          systemMessageRemedy,
           ...apiMessages
         ]
       }
@@ -974,7 +1008,7 @@ function Chatbot() {
       const apiRequestBody = {
         "model": "gpt-4o-mini",
         "messages": [
-          systemMessageGeneralConsult,
+          systemMessageRemedy,
           ...apiMessages
         ]
       }
@@ -993,7 +1027,31 @@ function Chatbot() {
 
         if (data.choices && data.choices.length > 0 && data.choices[0].message) {
           let rawResponse = data.choices[0].message.content;
+
           const formattedResponse = formatResponse(rawResponse);
+          // Parse the workout plan
+          const mealPlan = parseMealPlan(rawResponse);
+          console.log('Parsed meal plan:', mealPlan);
+
+          if (mealPlan.length > 0) {
+            // Get the current user's ID
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (error) throw error;
+            if (user && user.id) {
+              try {
+                await insertMealPlan(mealPlan, user.id);
+                console.log(getMealPlanUser.meal_plan);
+                console.log('Meal plan processed and saved successfully');
+              } catch (insertError) {
+                console.error('Failed to insert meal plan:', insertError);
+                // You might want to add a user-friendly error message here
+              }
+            } else {
+              console.warn('No user found. Meal plan not saved to database.');
+            }
+          } else {
+            console.warn('No valid meal plan found in the response.');
+          }
           setMessages(prevMessages => [
             ...prevMessages,
             {

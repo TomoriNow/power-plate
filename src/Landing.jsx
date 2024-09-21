@@ -1,7 +1,8 @@
 import logo from './assets/Entity-logo.png'
 import Cards from './Cards'
 
-function Landing({username}) {
+
+function Landing({ username }) {
     return (
         <div className="w-1/2 flex items-center justify-center">
             <div className="w-full">
