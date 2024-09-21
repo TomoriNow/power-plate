@@ -175,11 +175,11 @@ function Chatbot() {
     setMessages(newMessages);
     
     setIsTyping(true);
-    await processMessageToPlateGPT(newMessages);
+    await processMessageToHercules(newMessages);
   };
   
   
-  async function processMessageToPlateGPT(chatMessages) {
+  async function processMessageToHercules(chatMessages) {
     let apiMessages = chatMessages.map((messageObject) => {
       let role = messageObject.sender === "Hercules" ? "assistant" : "user";
       return { role: role, content: messageObject.message }
