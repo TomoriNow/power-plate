@@ -35,7 +35,25 @@ export async function fetchUserData() {
 }
 
 export async function fetchMealPlanData() {
-  useEffect(() => {}, []);
+  useEffect(() => {
+    const user = supabase.auth.getUser();
+    if (user) {
+      setUserId(user.id); // Get the current user ID
+    }
+  }, []);
+  try {
+    const {data, error} = await supabase
+      .from('meal_plans')
+      .select('meal')
+      .eq('user_id', user.id)
+      .order('day', {ascending: true});
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching meal plan data:', error);
+    return null;
+  }
 }
 
 // We'll use an async IIFE to get the current user
@@ -54,6 +72,8 @@ const getMealPlanUser = async () => {
   if (user){
     const mealPlanData = await fetchMealPlanData();
     return mealPlanData;
+  } else{
+    return null;
   }
 }
 
