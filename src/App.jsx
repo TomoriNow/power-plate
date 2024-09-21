@@ -9,8 +9,12 @@ import Chatbot from './Chatbot'
 const ANON_KEY = import.meta.env.VITE_ANON_API_KEY;
 const supabase = createClient('https://lufswepdkuvvgsrmqist.supabase.co', ANON_KEY)
 
-function ProtectedRoute({ children, isProfileComplete }) {
+function ProtectedRoute({ children, isProfileComplete, isLoading }) {
   const location = useLocation();
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Or a loading spinner
+  }
   
   if (!isProfileComplete) {
     return <Navigate to="/survey" state={{ from: location }} replace />;
@@ -23,12 +27,15 @@ function App() {
   const [session, setSession] = useState(null)
   const [username, setUsername] = useState('')
   const [isProfileComplete, setIsProfileComplete] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       if (session) {
         fetchUserData(session.user.id)
+      } else {
+        setIsLoading(false)
       }
     })
 
@@ -38,6 +45,8 @@ function App() {
       setSession(session)
       if (session) {
         fetchUserData(session.user.id)
+      } else {
+        setIsLoading(false)
       }
     })
 
@@ -59,6 +68,7 @@ function App() {
         data.weight && data.height && data.age && data.gender && data.location && data.workout_preferences && data.allergies
       )
     }
+    setIsLoading(false)
   }
 
   const handleProfileComplete = () => {
@@ -74,27 +84,39 @@ function App() {
 
   if (!session) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-400 to-blue-600 flex flex-col justify-center items-center p-4">
-        <div className="w-full max-w-md">
-          <h1 className="text-4xl font-bold text-white text-center mb-8">Power Plate</h1>
-          <div className="bg-white rounded-lg shadow-xl p-8">
+      <div className="flex h-screen">
+        {/* Left side */}
+        <div className="w-1/2 bg-gray-800 flex items-center justify-center">
+    <div className="text-center">
+      <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500 mb-4 font-roboto">
+        We are PowerPlate
+      </h2>
+      <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500 font-roboto">
+        Your Personal Health Consultant
+      </h1>
+    </div>
+  </div>
+  
+        {/* Right side */}
+        <div className="w-1/2 bg-black flex items-center justify-center">
+          <div className="w-3/4 max-w-md">
             <CustomAuth supabase={supabase} />
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
   
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-100 flex">
         {isProfileComplete && <Navbar onLogout={handleLogout} username={username} />}
-        <main className="container mx-auto px-4 py-8">
+        <main className="flex-grow ml-64 p-8"> {/* Added ml-64 to account for navbar width */}
           <Routes>
             <Route 
               path="/" 
               element={
-                <ProtectedRoute isProfileComplete={isProfileComplete}>
+                <ProtectedRoute isProfileComplete={isProfileComplete} isLoading={isLoading}>
                   <div>Welcome to PowerPlate!</div>
                 </ProtectedRoute>
               } 
@@ -116,7 +138,7 @@ function App() {
             <Route 
               path="/chat" 
               element={
-                <ProtectedRoute isProfileComplete={isProfileComplete}>
+                <ProtectedRoute isProfileComplete={isProfileComplete} isLoading={isLoading}>
                   <Chatbot />
                 </ProtectedRoute>
               } 

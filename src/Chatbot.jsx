@@ -3,13 +3,15 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
+import { supabase } from './supabaseClient';
 import.meta.env
 
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY
 
+
 export async function fetchUserData() {
   useEffect(() => {
-    const user = supabase.auth.user();
+    const user = supabase.auth.getUser();
     if (user) {
       setUserId(user.id); // Get the current user ID
     }
@@ -34,7 +36,7 @@ export async function fetchUserData() {
 
 // We'll use an async IIFE to get the current user
 const getCurrentUser = async () => {
-  const user = supabase.auth.user();
+  const user = supabase.auth.getUser();
   if (user) {
     const userData = await fetchUserData();
     return userData;
@@ -446,6 +448,7 @@ function Chatbot() {
     }
 
   }
+  
 
   //Process General Consultation
   async function processMessageToConsult(chatMessages) {
@@ -498,6 +501,181 @@ function Chatbot() {
       ]);
     } finally {
       setIsTyping(false);
+    }
+  }
+  
+  function parseMealPlan(response) {
+    if (typeof response !== 'string' || response === '') {
+      console.error('Invalid response format');
+      return [];
+    }
+  
+    // Find the position of "DAY 1" and start parsing from there
+    const startIndex = response.indexOf('DAY 1');
+    if (startIndex === -1) {
+      console.error('No valid meal days found');
+      return [];
+    }
+  
+    // Trim the response from "DAY 1" onward
+    const mealPlan = response.slice(startIndex);
+  
+    // Split the meal plan by 'DAY' and filter out any empty days
+    const days = mealPlan.split('DAY').filter(day => day);
+  
+    // Initialize an empty object to hold parsed days
+    const parsedDays = {};
+    
+    // Parse each day from the meal plan
+    days.forEach(day => {
+      const lines = day.split('\n').filter(line => line);
+  
+      if (lines.length < 2) {
+        // Skip invalid entries with insufficient data
+        return;
+      }
+  
+      // Extract day number and details
+      const dayNum = lines[0].replace(':', '').trim();
+      let type = lines[1].toUpperCase().startsWith('REST-DAY') ? 'REST-DAY' : 'WORKOUT';
+      let meal = lines.slice(2).join(' ').trim();
+  
+      // If the workout description is blank, set the type to REST-DAY
+      if (!workout) {
+        type = 'REST-DAY';
+        workout = ''; // Ensure workout is blank for REST-DAY
+      }
+  
+      // Add the parsed day to the parsedDays object
+      parsedDays[dayNum] = {
+        day: dayNum,
+        type: type,
+        workout: workout
+      };
+    });
+  
+    return parsedDays;
+  }
+  
+  function parseWorkoutPlan(response) {
+    if (typeof response !== 'string' || response === '') {
+      console.error('Invalid response format');
+      return [];
+    }
+  
+    // Find the position of "DAY 1" and start parsing from there
+    const startIndex = response.indexOf('DAY 1');
+    if (startIndex === -1) {
+      console.error('No valid workout days found');
+      return [];
+    }
+  
+    // Trim the response from "DAY 1" onward
+    const workoutPlan = response.slice(startIndex);
+  
+    // Split the workout plan by 'DAY' and filter out any empty days
+    const days = workoutPlan.split('DAY').filter(day => day);
+  
+    // Initialize an empty object to hold parsed days
+    const parsedDays = {};
+  
+    // Parse each day from the workout plan
+    days.forEach(day => {
+      const lines = day.split('\n').filter(line => line);
+  
+      if (lines.length < 2) {
+        // Skip invalid entries with insufficient data
+        return;
+      }
+  
+      // Extract day number and details
+      const dayNum = lines[0].replace(':', '').trim();
+      let type = lines[1].toUpperCase().startsWith('REST-DAY') ? 'REST-DAY' : 'WORKOUT';
+      let workout = lines.slice(2).join(' ').trim();
+  
+      // If the workout description is blank, set the type to REST-DAY
+      if (!workout) {
+        type = 'REST-DAY';
+        workout = ''; // Ensure workout is blank for REST-DAY
+      }
+  
+      // Add the parsed day to the parsedDays object
+      parsedDays[dayNum] = {
+        day: dayNum,
+        type: type,
+        workout: workout
+      };
+    });
+  
+    // Ensure we have exactly 7 days (1 to 7)
+    const completePlan = [];
+    for (let i = 1; i <= 7; i++) {
+      const dayStr = i.toString(); // Convert to string for key lookup
+      if (parsedDays[dayStr]) {
+        completePlan.push(parsedDays[dayStr]);
+      } else {
+        // If the day is missing in the parsedDays, add a default REST-DAY
+        completePlan.push({
+          day: dayStr,
+          type: 'REST-DAY',
+          workout: ''
+        });
+      }
+    }
+  
+    return completePlan;
+  }
+  
+  
+  
+  async function insertWorkoutPlan(workoutPlan, userId) {
+    if (!userId) {
+      console.error('No user ID provided. Cannot insert workout plan.');
+      return;
+    }
+  
+    try {
+      // First, check if the user exists in the users table
+      let { data: user, error: userError } = await supabase
+        .from('users')
+        .select('user_id')
+        .eq('user_id', userId)
+        .single();
+  
+      if (userError) {
+        if (userError.code === 'PGRST116') {
+          console.log(`User with id ${userId} not found in the users table. Attempting to create...`);
+          // User doesn't exist, so let's create them
+          const { data: newUser, error: createError } = await supabase
+            .from('users')
+            .insert({ user_id: userId })
+            .single();
+  
+          if (createError) throw createError;
+          user = newUser;
+        } else {
+          throw userError;
+        }
+      }
+  
+      // If we reach here, the user exists (or was just created), so we can proceed with inserting the workout plan
+      for (const day of workoutPlan) {
+        const { data, error } = await supabase
+          .from('workout_plans')
+          .upsert({
+            user_id: userId,
+            day: day.day,
+            workout: day.type === 'REST-DAY' ? 'Rest Day' : day.workout
+          }, {
+            onConflict: 'user_id,day'
+          });
+  
+        if (error) throw error;
+      }
+      console.log('Workout plan inserted successfully');
+    } catch (error) {
+      console.error('Error inserting workout plan:', error);
+      throw error; // Re-throw the error so it can be caught and handled by the caller
     }
   }
   
@@ -554,57 +732,84 @@ async function processWorkoutPlan(chatMessages) {
             setIsTyping(false);
           }
     } else {
-        let apiMessages = chatMessages.map((messageObject) => {
-            let role = messageObject.sender === "Hercules" ? "assistant" : "user";
-            return { role: role, content: messageObject.message }
-          });
-        
-          const apiRequestBody = {
-            "model": "gpt-4o-mini", 
-            "messages": [
-              systemMessageWorkoutPlanNotGenerated,
-              ...apiMessages 
-            ]
-          }
-        
-          try {
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${API_KEY}`,
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify(apiRequestBody)
-            });
-        
-            const data = await response.json();
-        
-            if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-              let rawResponse = data.choices[0].message.content;
-              const formattedResponse = formatResponse(rawResponse);
-                setMessages(prevMessages => [
-                  ...prevMessages,
-                  {
-                    message: formattedResponse,
-                    sender: "Hercules",
-                    direction: "incoming",
-                  },
-                ]);
+      let apiMessages = chatMessages.map((messageObject) => {
+        let role = messageObject.sender === "Hercules" ? "assistant" : "user";
+        return { role: role, content: messageObject.message }
+      });
+      
+      const apiRequestBody = {
+        "model": "gpt-4o-mini", 
+        "messages": [
+          systemMessageWorkoutPlanNotGenerated,
+          ...apiMessages 
+        ]
+      }
+      
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(apiRequestBody)
+        });
+      
+        const data = await response.json();
+      
+        if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+          let rawResponse = data.choices[0].message.content;
+          console.log('Raw API response:', rawResponse);
+          const formattedResponse = formatResponse(rawResponse);
+          
+          // Parse the workout plan
+          const workoutPlan = parseWorkoutPlan(rawResponse);
+          console.log('Parsed workout plan:', workoutPlan);
+          
+          if (workoutPlan.length > 0) {
+            // Get the current user's ID
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (error) throw error;
+            if (user && user.id) {
+              try {
+                await insertWorkoutPlan(workoutPlan, user.id);
+                console.log('Workout plan processed and saved successfully');
+              } catch (insertError) {
+                console.error('Failed to insert workout plan:', insertError);
+                // You might want to add a user-friendly error message here
+              }
+            } else {
+              console.warn('No user found. Workout plan not saved to database.');
             }
-          } catch (error) {
-            console.error("Error processing message:", error);
-            setMessages(prevMessages => [
-              ...prevMessages,
-              {
-                message: `I'm sorry, I encountered an error while processing your request: ${error.message}.`,
-                sender: "Hercules",
-                direction: "incoming",
-              },
-            ]);
-          } finally {
-            setIsTyping(false);
-            setIsWorkoutGenerated(true);
+          } else {
+            console.warn('No valid workout plan found in the response.');
           }
+          
+          setMessages(prevMessages => [
+            ...prevMessages,
+            {
+              message: formattedResponse,
+              sender: "Hercules",
+              direction: "incoming",
+            },
+          ]);
+        } else {
+          throw new Error('No valid response from the API');
+        }
+      } catch (error) {
+        console.error("Error processing message:", error);
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            message: `I'm sorry, I encountered an error while processing your request: ${error.message}. Please try again.`,
+            sender: "Hercules",
+            direction: "incoming",
+          },
+        ]);
+      } finally {
+        setIsTyping(false);
+        setIsWorkoutGenerated(true);
+      }
     }
   }
   

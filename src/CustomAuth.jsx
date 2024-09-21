@@ -81,13 +81,13 @@ const CustomAuth = ({ supabase }) => {
       <div className="flex justify-center space-x-4">
         <button
           onClick={() => setIsSignUp(false)}
-          className={`px-4 py-2 rounded ${!isSignUp ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          className={`px-4 py-2 rounded ${!isSignUp ? 'bg-black text-white border-purple-500 border-2' : 'bg-white text-black border-black'}`}
         >
           Sign In
         </button>
         <button
           onClick={() => setIsSignUp(true)}
-          className={`px-4 py-2 rounded ${isSignUp ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          className={`px-4 py-2 rounded ${isSignUp ? 'bg-black text-white border-purple-500 border-2' : 'bg-white text-black border-black'}`}
         >
           Sign Up
         </button>
@@ -98,7 +98,7 @@ const CustomAuth = ({ supabase }) => {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 bg-black text-white border border-white rounded placeholder-white focus:outline-none focus:ring-2 focus:ring-white"
           required
         />
         <input
@@ -106,7 +106,7 @@ const CustomAuth = ({ supabase }) => {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 bg-black text-white border border-white rounded placeholder-white focus:outline-none focus:ring-2 focus:ring-white"
           required
         />
         {isSignUp && (
@@ -115,11 +115,12 @@ const CustomAuth = ({ supabase }) => {
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 bg-black text-white border border-white rounded placeholder-white focus:outline-none focus:ring-2 focus:ring-white"
             required
           />
         )}
-        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+        <hr />
+        <button type="submit" className="w-full bg-purple-500 text-white p-2 rounded hover:bg-purple-600">
           {isSignUp ? 'Sign Up' : 'Sign In'}
         </button>
       </form>
