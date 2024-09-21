@@ -90,10 +90,10 @@ function App() {
         <div className="w-1/2 bg-zinc-900 flex items-center justify-center">
           <div className="text-center justify-center">
             <img src="src/assets/PowerPlate-logo.png" className='flex size-32 mx-auto mb-8' />
-            <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-cyan-300 mb-4 font-roboto">
+            <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#C87FEB] to-cyan-300 mb-4 font-roboto">
               We are PowerPlate
             </h2>
-            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-cyan-300 font-roboto">
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#C87FEB] to-cyan-300 font-roboto">
               Your Personal Health Consultant
             </h1>
           </div>
@@ -111,7 +111,7 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#222222] flex items-center justify-center">
           <Routes>
             <Route
               path="/"
