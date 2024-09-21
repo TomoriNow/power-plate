@@ -595,10 +595,10 @@ function Chatbot() {
         // If the day is missing, add a default empty day
         completePlan.push({
           day: i.toString(),
-          meal_plan: {
+          meals: {
             BREAKFAST: '',
             LUNCH: '',
-            DINNER: ''
+            DINNER: '',
           }
         });
       }
@@ -713,7 +713,7 @@ function Chatbot() {
           .upsert({
             user_id: userId,
             day: day.day,
-            meal_plan: day.meal_plan
+            meal_plan: day.meals
             //explanation: day.explanation // Include Explanation if needed
           }, {
             onConflict: 'user_id,day'
