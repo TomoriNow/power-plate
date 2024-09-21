@@ -83,9 +83,7 @@ function App() {
           <main className="container mx-auto px-4 py-8">
             <Routes>
               {/* Your routes here */}
-              <Switch>
-                <Link exact match="/chat"><Chatbot /></Link>
-              </Switch>
+              <Route exact path="/chat" element={<Chatbot />} />
             </Routes>
           </main>
         </div>
