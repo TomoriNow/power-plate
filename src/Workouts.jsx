@@ -79,16 +79,16 @@ const Workouts = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <div className="flex space-x-2 mb-6 overflow-x-auto">
+    <div className="content-center w-2/3 ml-60 p-4">
+      <div className="flex flex-row space-x-2 mb-6 overflow-x-auto">
         {[1, 2, 3, 4, 5, 6, 7].map(day => (
           <button
             key={day}
             onClick={() => setSelectedDay(day)}
-            className={`px-4 py-2 rounded-full ${
+            className={`basis-1/5 px-4 py-2 rounded-full ${
               selectedDay === day
-                ? 'bg-purple-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? 'bg-[#C87EFB] text-white'
+                : 'bg-[#333333] text-white hover:bg-[#444444]'
             }`}
           >
             Day {day}

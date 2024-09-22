@@ -1,4 +1,4 @@
-import logo from './assets/Entity-logo.png'
+import logo from '../public/Entity-logo.png'
 import Cards from './Cards'
 
 
