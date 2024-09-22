@@ -1111,7 +1111,7 @@ function Chatbot() {
           }}
           className={buttonClasses(activeButton === 'meal')}
         >
-          <img src="src/assets/Food-s.png" className="mr-3 size-5" />
+          <img src="public/Food-s.png" className="mr-3 size-5" />
           <h5>Chat for MyMeals</h5>
         </button>
 
@@ -1125,7 +1125,7 @@ function Chatbot() {
           }}
           className={buttonClasses(activeButton === 'workout')}
         >
-          <img src="src/assets/Workout-s.png" className="mr-3 size-5" />
+          <img src="public/Workout-s.png" className="mr-3 size-5" />
           <h5>Chat for MyWorkout</h5>
         </button>
 
@@ -1139,7 +1139,7 @@ function Chatbot() {
           }}
           className={buttonClasses(activeButton === 'remedy')}
         >
-          <img src="src/assets/Fix-s.png" className="mr-3 size-5" />
+          <img src="public/Fix-s.png" className="mr-3 size-5" />
           <h5>Remedy</h5>
         </button>
         <button
@@ -1152,7 +1152,7 @@ function Chatbot() {
           }}
           className={buttonClasses(activeButton === 'consultation')}
         >
-          <img src="src/assets/Chat-s.png" className="mr-3 size-5" />
+          <img src="public/Chat-s.png" className="mr-3 size-5" />
           <h5>General Consultation</h5>
         </button>
 

@@ -91,7 +91,7 @@ function App() {
         {/* Left side */}
         <div className="w-1/2 bg-zinc-900 flex items-center justify-center">
           <div className="text-center justify-center">
-            <img src="src/assets/PowerPlate-logo.png" className='flex size-32 mx-auto mb-8' />
+            <img src="public/PowerPlate-logo.png" className='flex size-32 mx-auto mb-8' />
             <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#C87FEB] to-cyan-300 mb-4 font-roboto">
               We are PowerPlate
             </h2>
